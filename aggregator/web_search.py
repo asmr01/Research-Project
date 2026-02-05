@@ -35,14 +35,53 @@ class WebSearchManager:
 
     # Pre-defined search queries for Mass General Psychiatry
     SEARCH_QUERIES = {
-        "reviews": [
+        # Patient reviews - healthcare platforms
+        "patient_reviews": [
             "Massachusetts General Hospital Psychiatry reviews",
             "Mass General Psychiatry patient reviews",
             "MGH Behavioral Health reviews ratings",
             "Massachusetts General Hospital mental health patient experience",
             '"Mass General" psychiatry Healthgrades',
             '"Massachusetts General Hospital" psychiatry Vitals reviews',
+            "site:zocdoc.com Massachusetts General Hospital psychiatry",
+            "site:ratemds.com Mass General psychiatry",
+            "site:webmd.com Massachusetts General Hospital psychiatrist reviews",
         ],
+        # Patient reviews - Reddit and social media
+        "patient_reviews_reddit": [
+            "site:reddit.com Massachusetts General Hospital psychiatry",
+            "site:reddit.com MGH psychiatry experience",
+            "site:reddit.com Mass General mental health",
+            "site:reddit.com/r/boston Mass General psychiatry",
+            "site:reddit.com/r/massachusetts MGH mental health",
+            "site:reddit.com/r/mentalhealth Mass General",
+            "site:reddit.com/r/depression Massachusetts General Hospital",
+            "site:reddit.com/r/anxiety MGH psychiatry",
+            "site:reddit.com/r/therapy Mass General Boston",
+        ],
+        # Employee reviews - general workplace platforms
+        "employee_reviews": [
+            "site:glassdoor.com Massachusetts General Hospital reviews",
+            "site:glassdoor.com Mass General Brigham employee reviews",
+            "site:indeed.com/cmp Massachusetts General Hospital reviews",
+            "site:comparably.com Massachusetts General Hospital",
+            "MGH employee reviews Glassdoor",
+            "Mass General Brigham workplace reviews",
+        ],
+        # Employee reviews - healthcare worker specific
+        "employee_reviews_healthcare": [
+            "site:allnurses.com Massachusetts General Hospital",
+            "site:allnurses.com MGH nursing",
+            "site:studentdoctor.net MGH psychiatry residency",
+            "site:doximity.com Massachusetts General Hospital",
+            "Mass General nurse reviews",
+            "MGH psychiatry residency reviews",
+            "Massachusetts General Hospital physician reviews workplace",
+            "site:reddit.com/r/nursing MGH",
+            "site:reddit.com/r/Residency Massachusetts General",
+            "site:reddit.com/r/medicine Mass General",
+        ],
+        # Quality metrics
         "quality_metrics": [
             "Massachusetts General Hospital Psychiatry quality ratings",
             "MGH Psychiatry US News ranking",
@@ -50,30 +89,61 @@ class WebSearchManager:
             "Massachusetts General Hospital mental health outcomes",
             "MGH Psychiatry Joint Commission",
             "Mass General Hospital CMS quality ratings",
+            "site:medicare.gov Massachusetts General Hospital",
+            "site:hospitalsafetygrade.org Massachusetts General Hospital",
         ],
+        # Financial data
+        "financial": [
+            "Massachusetts General Hospital revenue",
+            "Mass General Brigham financial report",
+            "site:projects.propublica.org Massachusetts General Hospital 990",
+            "MGH operating margin",
+            "Mass General Brigham annual report",
+            "Massachusetts General Hospital charity care",
+            "site:mass.gov Massachusetts General Hospital financial",
+        ],
+        # Operational data
+        "operational": [
+            "Massachusetts General Hospital beds capacity",
+            "MGH psychiatric beds",
+            "Mass General psychiatry department size",
+            "Massachusetts General Hospital employee count",
+            "MGH staffing ratios",
+            "Mass General Brigham admissions statistics",
+        ],
+        # Provider info
         "provider_info": [
             "Massachusetts General Hospital Psychiatry doctors",
             "MGH Psychiatry department providers",
             "Mass General mental health specialists",
             "Massachusetts General Hospital psychiatrists",
+            "MGH behavioral health team",
         ],
+        # Services
         "services": [
             "Massachusetts General Hospital Psychiatry services",
             "MGH inpatient psychiatry programs",
             "Mass General outpatient mental health",
             "Massachusetts General Hospital behavioral health programs",
             "MGH Psychiatry telehealth telepsychiatry",
+            "Mass General depression treatment program",
+            "MGH anxiety clinic",
         ],
+        # News
         "news": [
             "Massachusetts General Hospital Psychiatry news 2024 2025",
             "MGH mental health research",
             "Mass General Psychiatry awards recognition",
             "Massachusetts General Hospital behavioral health expansion",
+            "site:beckershospitalreview.com Massachusetts General Hospital",
+            "site:modernhealthcare.com Mass General Brigham",
         ],
+        # Research
         "research": [
             "Massachusetts General Hospital Psychiatry research publications",
             "MGH Psychiatry clinical trials",
             "Mass General mental health studies",
+            "site:pubmed.gov Massachusetts General Hospital psychiatry",
         ],
     }
 
@@ -92,6 +162,24 @@ class WebSearchManager:
         if category:
             return {category: self.SEARCH_QUERIES.get(category, [])}
         return self.SEARCH_QUERIES.copy()
+
+    def get_all_patient_review_queries(self) -> list[str]:
+        """Get all patient review queries including Reddit."""
+        queries = self.SEARCH_QUERIES.get("patient_reviews", []).copy()
+        queries.extend(self.SEARCH_QUERIES.get("patient_reviews_reddit", []))
+        return queries
+
+    def get_all_employee_review_queries(self) -> list[str]:
+        """Get all employee review queries including healthcare-specific."""
+        queries = self.SEARCH_QUERIES.get("employee_reviews", []).copy()
+        queries.extend(self.SEARCH_QUERIES.get("employee_reviews_healthcare", []))
+        return queries
+
+    def get_all_financial_queries(self) -> list[str]:
+        """Get all financial and operational queries."""
+        queries = self.SEARCH_QUERIES.get("financial", []).copy()
+        queries.extend(self.SEARCH_QUERIES.get("operational", []))
+        return queries
 
     def build_google_search_url(self, query: str) -> str:
         """Build a Google search URL for the given query."""
@@ -182,11 +270,14 @@ class WebSearchManager:
         text_lower = text.lower()
 
         category_keywords = {
-            "patient_review": ["patient", "review", "experience", "visit", "appointment"],
-            "quality_metric": ["rating", "quality", "score", "ranking", "accreditation"],
+            "patient_review": ["patient", "review", "experience", "visit", "appointment", "treated"],
+            "employee_review": ["employee", "workplace", "work-life", "management", "salary", "glassdoor"],
+            "quality_metric": ["rating", "quality", "score", "ranking", "accreditation", "safety grade"],
+            "financial": ["revenue", "margin", "financial", "budget", "cost", "expense", "990"],
+            "operational": ["beds", "admissions", "staffing", "capacity", "ftes"],
             "provider_info": ["doctor", "physician", "psychiatrist", "provider", "specialist"],
             "service_info": ["program", "service", "treatment", "therapy", "inpatient", "outpatient"],
-            "research": ["research", "study", "clinical trial", "publication"],
+            "research": ["research", "study", "clinical trial", "publication", "pubmed"],
             "news": ["news", "announced", "award", "recognition", "expansion"],
         }
 
@@ -208,13 +299,24 @@ Hospital's Psychiatry and Behavioral Health services.
 
 ## Data Sources Searched
 
-### Review Platforms
+### Patient Review Platforms
 - Healthgrades
 - Vitals
 - Zocdoc
 - Google Reviews
 - Yelp
 - RateMDs
+- WebMD
+- Reddit (multiple subreddits)
+
+### Employee/Provider Review Platforms
+- Glassdoor
+- Indeed
+- Comparably
+- AllNurses
+- Doximity
+- Student Doctor Network
+- Reddit (r/medicine, r/nursing, r/Residency)
 
 ### Quality & Rating Organizations
 - CMS Hospital Compare (Medicare)
@@ -222,6 +324,13 @@ Hospital's Psychiatry and Behavioral Health services.
 - Leapfrog Hospital Safety Grade
 - The Joint Commission
 - SAMHSA
+
+### Financial & Operational
+- IRS Form 990 (via ProPublica)
+- CMS Cost Reports
+- Massachusetts Health Policy Commission
+- Becker's Hospital Review
+- Modern Healthcare
 
 ### News & Information
 - Institution press releases
@@ -237,11 +346,14 @@ Hospital's Psychiatry and Behavioral Health services.
 ### Patient Reviews
 {patient_reviews}
 
+### Employee/Provider Reviews
+{employee_reviews}
+
 ### Quality Metrics
 {quality_metrics}
 
-### Provider Information
-{provider_info}
+### Financial & Operational Data
+{financial_operational}
 
 ### Services & Programs
 {services}

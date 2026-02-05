@@ -1,8 +1,22 @@
 """Data sources for aggregating Mass General Psychiatry information."""
 
-from .base import DataSource
-from .reviews import ReviewAggregator
+from .base import DataItem, DataSource
+from .patient_reviews import PatientReviewAggregator
+from .employee_reviews import EmployeeReviewAggregator
 from .quality import QualityMetricsCollector
+from .financial import FinancialOperationalCollector
 from .news import NewsCollector
 
-__all__ = ["DataSource", "ReviewAggregator", "QualityMetricsCollector", "NewsCollector"]
+# Legacy import for backwards compatibility
+from .reviews import ReviewAggregator
+
+__all__ = [
+    "DataItem",
+    "DataSource",
+    "PatientReviewAggregator",
+    "EmployeeReviewAggregator",
+    "QualityMetricsCollector",
+    "FinancialOperationalCollector",
+    "NewsCollector",
+    "ReviewAggregator",  # Legacy
+]

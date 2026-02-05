@@ -2,8 +2,12 @@
 """Main entry point for the Mass General Psychiatry Information Aggregator.
 
 This tool aggregates information about Mass General Psychiatry from various
-online sources including patient reviews, provider reviews, quality metrics,
-and news articles.
+online sources including:
+- Patient reviews (healthcare platforms + Reddit/social media)
+- Employee/provider reviews (Glassdoor, healthcare worker platforms)
+- Quality metrics and ratings
+- Financial and operational data
+- News articles
 """
 
 import argparse
@@ -13,7 +17,13 @@ from pathlib import Path
 from typing import Any
 
 from .report import ReportGenerator
-from .sources import NewsCollector, QualityMetricsCollector, ReviewAggregator
+from .sources import (
+    EmployeeReviewAggregator,
+    FinancialOperationalCollector,
+    NewsCollector,
+    PatientReviewAggregator,
+    QualityMetricsCollector,
+)
 
 
 class MassGeneralPsychiatryAggregator:
@@ -25,12 +35,15 @@ class MassGeneralPsychiatryAggregator:
         "MGH Psychiatry",
         "Mass General Behavioral Health",
         "Massachusetts General Hospital Mental Health",
+        "Mass General Brigham Psychiatry",
     ]
 
     def __init__(self, output_dir: str | Path = "reports"):
         self.output_dir = Path(output_dir)
-        self.review_aggregator = ReviewAggregator()
+        self.patient_review_aggregator = PatientReviewAggregator()
+        self.employee_review_aggregator = EmployeeReviewAggregator()
         self.quality_collector = QualityMetricsCollector()
+        self.financial_collector = FinancialOperationalCollector()
         self.news_collector = NewsCollector()
         self.collected_data: dict[str, list[Any]] = {}
 
@@ -49,11 +62,17 @@ class MassGeneralPsychiatryAggregator:
         print("-" * 50)
 
         # Collect from all sources
-        print("Gathering review sources...")
-        reviews = self.review_aggregator.collect(term)
+        print("Gathering patient review sources...")
+        patient_reviews = self.patient_review_aggregator.collect(term)
+
+        print("Gathering employee/provider review sources...")
+        employee_reviews = self.employee_review_aggregator.collect(term)
 
         print("Gathering quality metrics sources...")
         quality = self.quality_collector.collect(term)
+
+        print("Gathering financial/operational sources...")
+        financial = self.financial_collector.collect(term)
 
         print("Gathering news sources...")
         news = self.news_collector.collect(term)
@@ -61,14 +80,18 @@ class MassGeneralPsychiatryAggregator:
         self.collected_data = {
             "search_term": term,
             "collected_at": datetime.now().isoformat(),
-            "reviews": reviews,
+            "patient_reviews": patient_reviews,
+            "employee_reviews": employee_reviews,
             "quality_metrics": quality,
+            "financial_operational": financial,
             "news": news,
         }
 
         print(f"\nCollection complete!")
-        print(f"  - Review sources: {len(reviews)}")
+        print(f"  - Patient review sources: {len(patient_reviews)}")
+        print(f"  - Employee review sources: {len(employee_reviews)}")
         print(f"  - Quality sources: {len(quality)}")
+        print(f"  - Financial/operational sources: {len(financial)}")
         print(f"  - News sources: {len(news)}")
 
         return self.collected_data
@@ -97,20 +120,31 @@ class MassGeneralPsychiatryAggregator:
             "executive_summary",
             "This report aggregates publicly available information about "
             "Massachusetts General Hospital's Psychiatry department, including "
-            "patient reviews, quality metrics, and news coverage. The data sources "
+            "patient reviews, employee/provider reviews, quality metrics, "
+            "financial/operational data, and news coverage. The data sources "
             "and search queries are provided to enable verification and further research.",
         )
 
         sources_used = []
 
-        # Add review section
-        review_platforms = self.review_aggregator.get_platform_info()
-        sources_used.extend([p["name"] for p in review_platforms])
+        # Add patient review section
+        patient_platforms = self.patient_review_aggregator.get_platform_info()
+        sources_used.extend([p["name"] for p in patient_platforms])
         report.add_section(
-            "Patient & Provider Reviews",
-            self.collected_data["reviews"],
-            summary="Information from major healthcare review platforms. "
-            "These sources provide patient feedback and provider ratings.",
+            "Patient Reviews & Experiences",
+            self.collected_data["patient_reviews"],
+            summary="Patient reviews and community discussions from healthcare platforms, "
+            "Google, Yelp, Reddit, and other social media sources.",
+        )
+
+        # Add employee review section
+        employee_platforms = self.employee_review_aggregator.get_platform_info()
+        sources_used.extend([p["name"] for p in employee_platforms])
+        report.add_section(
+            "Employee & Provider Reviews",
+            self.collected_data["employee_reviews"],
+            summary="Workplace reviews from Glassdoor, Indeed, and healthcare-specific "
+            "platforms for doctors, nurses, and other staff.",
         )
 
         # Add quality metrics section
@@ -123,9 +157,15 @@ class MassGeneralPsychiatryAggregator:
             "and accreditation bodies.",
         )
 
-        # Add psychiatry-specific metrics info
-        psych_metrics = self.quality_collector.get_psychiatry_metrics()
-        report.set_metadata("psychiatry_metrics_tracked", psych_metrics)
+        # Add financial/operational section
+        financial_sources = self.financial_collector.get_source_info()
+        sources_used.extend([s["name"] for s in financial_sources])
+        report.add_section(
+            "Financial & Operational Data",
+            self.collected_data["financial_operational"],
+            summary="Financial performance, operational metrics, and business news "
+            "from public filings and healthcare industry sources.",
+        )
 
         # Add news section
         news_sources = self.news_collector.get_source_info()
@@ -135,6 +175,10 @@ class MassGeneralPsychiatryAggregator:
             self.collected_data["news"],
             summary="News articles, press releases, and media coverage.",
         )
+
+        # Add psychiatry-specific metrics info
+        psych_metrics = self.quality_collector.get_psychiatry_metrics()
+        report.set_metadata("psychiatry_metrics_tracked", psych_metrics)
 
         report.set_metadata("sources_used", list(set(sources_used)))
         report.set_metadata("search_term", self.collected_data["search_term"])
@@ -156,18 +200,34 @@ class MassGeneralPsychiatryAggregator:
             Dictionary mapping source types to their search queries.
         """
         queries = {
-            "reviews": [],
+            "patient_reviews": [],
+            "employee_reviews": [],
             "quality": [],
+            "financial": [],
             "news": [],
         }
 
-        for item in self.collected_data.get("reviews", []):
+        for item in self.collected_data.get("patient_reviews", []):
             if "search_query" in item.metadata:
-                queries["reviews"].append(item.metadata["search_query"])
+                queries["patient_reviews"].append(item.metadata["search_query"])
+            if "search_queries" in item.metadata:
+                queries["patient_reviews"].extend(item.metadata["search_queries"])
+
+        for item in self.collected_data.get("employee_reviews", []):
+            if "search_query" in item.metadata:
+                queries["employee_reviews"].append(item.metadata["search_query"])
+            if "search_queries" in item.metadata:
+                queries["employee_reviews"].extend(item.metadata["search_queries"])
 
         for item in self.collected_data.get("quality_metrics", []):
             if "search_query" in item.metadata:
                 queries["quality"].append(item.metadata["search_query"])
+
+        for item in self.collected_data.get("financial_operational", []):
+            if "search_query" in item.metadata:
+                queries["financial"].append(item.metadata["search_query"])
+            if "search_queries" in item.metadata:
+                queries["financial"].extend(item.metadata["search_queries"])
 
         for item in self.collected_data.get("news", []):
             if "search_queries" in item.metadata:
@@ -177,17 +237,28 @@ class MassGeneralPsychiatryAggregator:
 
     def print_summary(self) -> None:
         """Print a summary of available data sources."""
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 70)
         print("MASS GENERAL PSYCHIATRY INFORMATION AGGREGATOR")
-        print("=" * 60)
+        print("=" * 70)
 
-        print("\n📋 REVIEW PLATFORMS:")
-        for platform in self.review_aggregator.get_platform_info():
-            print(f"  • {platform['name']}: {platform['description']}")
+        print("\n👥 PATIENT REVIEW PLATFORMS:")
+        for platform in self.patient_review_aggregator.get_platform_info():
+            ptype = platform.get("type", "")
+            print(f"  • {platform['name']}: {platform['description']} [{ptype}]")
+
+        print("\n👔 EMPLOYEE/PROVIDER REVIEW PLATFORMS:")
+        for platform in self.employee_review_aggregator.get_platform_info():
+            ptype = platform.get("type", "")
+            print(f"  • {platform['name']}: {platform['description']} [{ptype}]")
 
         print("\n📊 QUALITY DATA SOURCES:")
         for source in self.quality_collector.get_available_sources():
             print(f"  • {source['name']}: {source['description']}")
+
+        print("\n💰 FINANCIAL & OPERATIONAL SOURCES:")
+        for source in self.financial_collector.get_source_info():
+            stype = source.get("type", "")
+            print(f"  • {source['name']}: {source['description']} [{stype}]")
 
         print("\n📰 NEWS SOURCES:")
         for source in self.news_collector.get_source_info():
@@ -198,7 +269,7 @@ class MassGeneralPsychiatryAggregator:
             print(f"  • {metric}")
         print("  • ...")
 
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 70)
 
 
 def main():
