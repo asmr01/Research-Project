@@ -13,6 +13,15 @@ Usage:  python scrape_optum_ny.py
 """
 import csv, json, time, sys, urllib.parse, urllib.request
 
+# api.uhg.com is behind bot protection that checks the TLS/HTTP-2 fingerprint, so a
+# plain urllib request gets 401. curl_cffi impersonates Chrome (TLS+HTTP2) and works.
+#   pip install curl_cffi
+try:
+    from curl_cffi import requests as creq
+    _HAVE_CURL = True
+except Exception:
+    _HAVE_CURL = False
+
 API = "https://api.uhg.com/api/cross-domain/producer/ups-provider-search-api/3.0.0/"
 CDO_IDS = ["13599", "13600", "13601"]   # Optum New York
 LIMIT = 500                              # try large; API may cap ~100 (union of terms covers the rest)
@@ -23,8 +32,14 @@ HEADERS = {
     "accept-language": "en-US,en;q=0.9",
     "origin": "https://www.optum.com",
     "referer": "https://www.optum.com/",
+    "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not.A/Brand";v="99"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "cross-site",
     "user-agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                   "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"),
+                   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
 }
 
 # Broad sweep of specialty-style query terms (fuzzy matched; noise is fine, we dedupe by NPI)
@@ -73,11 +88,17 @@ def fetch(term):
                ("partner", "cdo_hybrid"), ("distance", "100"),
                ("with_filters", "true"), ("edit_distance", "1")]
     url = API + "?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers=HEADERS)
     for attempt in range(4):
         try:
-            with urllib.request.urlopen(req, timeout=40) as r:
-                return json.loads(r.read().decode("utf-8"))
+            if _HAVE_CURL:
+                r = creq.get(url, headers=HEADERS, impersonate="chrome", timeout=40)
+                if r.status_code != 200:
+                    raise RuntimeError(f"HTTP {r.status_code}")
+                return r.json()
+            else:
+                req = urllib.request.Request(url, headers=HEADERS)
+                with urllib.request.urlopen(req, timeout=40) as resp:
+                    return json.loads(resp.read().decode("utf-8"))
         except Exception as exc:
             if attempt == 3:
                 print(f"   ! failed '{term}': {exc}", file=sys.stderr); return None
@@ -132,6 +153,11 @@ def row_of(p, found_via):
 
 
 def main():
+    if _HAVE_CURL:
+        print("Using curl_cffi (Chrome impersonation).")
+    else:
+        print("WARNING: curl_cffi not installed -> requests will likely 401.\n"
+              "Install it first:  pip install curl_cffi\n")
     seen = {}
     capped = []
     terms = [("spec", t) for t in SPECIALTY_TERMS] + [("loc", t) for t in LOCATION_TERMS]
