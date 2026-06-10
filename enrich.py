@@ -4,6 +4,7 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
 SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/ffaf3307-optum_ny_providers.csv"
+LOC_SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/1581b988-optum_ny_locations.csv"
 OUT = "/home/user/Research-Project/optum_ny_providers_enriched.xlsx"
 
 # --- NUCC taxonomy code -> readable specialty (verified) ---
@@ -133,6 +134,10 @@ CITY_COUNTY = {
  "ellenville":"Ulster","woodstock":"Ulster","wallkill":"Ulster",
  # Sullivan
  "rock hill":"Sullivan","monticello":"Sullivan","liberty":"Sullivan","wurtsboro":"Sullivan",
+ # additional cities present in the full locations file
+ "albany":"Albany","airmont":"Rockland","chestnut ridge":"Rockland",
+ "lawrence":"Nassau","east rockaway":"Nassau","wheatley heights":"Suffolk",
+ "woodbury":"Nassau","lake success":"Nassau",
 }
 
 # zip5-specific overrides for ZIPs whose zip3 spans multiple counties (Hudson Valley/LI edges)
@@ -144,7 +149,8 @@ ZIP_COUNTY = {
  "12524":"Dutchess","12572":"Dutchess","12601":"Dutchess",
  "12561":"Ulster","12775":"Sullivan",
  "11040":"Nassau","11042":"Nassau","11714":"Nassau","11735":"Nassau","11753":"Nassau","11570":"Nassau","11791":"Nassau",
- "11706":"Suffolk","11787":"Suffolk","11901":"Suffolk",
+ "11706":"Suffolk","11787":"Suffolk","11901":"Suffolk","11798":"Suffolk",
+ "10952":"Rockland","10977":"Rockland","11797":"Nassau","11518":"Nassau","11559":"Nassau",
 }
 
 ZIP3 = {"100":"Manhattan","101":"Manhattan","102":"Manhattan","103":"Staten Island","104":"Bronx",
@@ -184,8 +190,12 @@ for r in rows:
 wsL = wb.create_sheet("Locations")
 lcols = ["location_npi","name","brand","county","city","zip","street","phone","provider_count"]
 wsL.append(lcols)
-for npi, d in sorted(loc_agg.items(), key=lambda x:(x[1]["county"], x[1]["city"], x[1]["name"])):
-    wsL.append([npi, d["name"], d["brand"], d["county"], d["city"], d["zip"], d["street"], d["phone"], d["n"]])
+loc_rows = list(csv.DictReader(open(LOC_SRC, encoding="utf-8-sig")))
+for lr in loc_rows:
+    cty = county(lr["city"], lr["zip"])
+    if not cty: unmapped_cty.add((lr["city"], lr["zip"]))
+    wsL.append([lr["location_npi"], lr["name"], lr["brand"], cty, lr["city"], lr["zip"],
+                lr["street"], lr["phone"], int(lr["provider_count"])])
 
 # formatting
 for ws in (wsP, wsL):
@@ -199,7 +209,9 @@ for ws in (wsP, wsL):
 
 wb.save(OUT)
 print("Saved", OUT)
-print("Providers:", len(rows), "| Locations (with >=1 provider):", len(loc_agg))
-print("County breakdown:", dict(collections.Counter(county(r["city"], r["zip"]) for r in rows)))
+print("Providers:", len(rows), "| Locations:", len(loc_rows),
+      "| sum provider_count:", sum(int(l["provider_count"]) for l in loc_rows))
+print("Provider county breakdown:", dict(collections.Counter(county(r["city"], r["zip"]) for r in rows)))
+print("Location county breakdown:", dict(collections.Counter(county(l["city"], l["zip"]) for l in loc_rows)))
 print("Unmapped specialty codes:", unmapped_spec or "none")
 print("Unmapped city/zip -> county:", unmapped_cty or "none")
