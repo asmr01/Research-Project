@@ -23,24 +23,59 @@ except Exception:
     _HAVE_CURL = False
 
 API = "https://api.uhg.com/api/cross-domain/producer/ups-provider-search-api/3.0.0/"
+WARMUP_URL = "https://www.optum.com/en/care/locations/optum-new-york/find-care.html"
 CDO_IDS = ["13599", "13600", "13601"]   # Optum New York
-LIMIT = 500                              # try large; API may cap ~100 (union of terms covers the rest)
-SLEEP = 0.5                              # seconds between requests (be a good citizen)
+LIMIT = 100                              # match the browser exactly (server caps ~100; term sweep covers the rest)
+RADIUS = "25"
+SLEEP = 0.6                              # seconds between requests (be a good citizen)
 
-HEADERS = {
+# Minimal headers for the curl_cffi path: let impersonation supply UA/sec-ch-ua/sec-fetch
+# so they stay CONSISTENT with the spoofed TLS fingerprint (a mismatch triggers the 401).
+CURL_HEADERS = {
     "accept": "application/json, text/plain, */*",
     "accept-language": "en-US,en;q=0.9",
     "origin": "https://www.optum.com",
     "referer": "https://www.optum.com/",
-    "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not.A/Brand";v="99"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "cross-site",
+}
+# Full headers only for the urllib fallback (no impersonation available there).
+URLLIB_HEADERS = dict(CURL_HEADERS, **{
     "user-agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
-}
+    "sec-fetch-dest": "empty", "sec-fetch-mode": "cors", "sec-fetch-site": "cross-site",
+})
+
+IMPERSONATE_TARGETS = ["chrome", "chrome131", "chrome124", "chrome120", "chrome116",
+                       "chrome110", "edge101", "safari17_2", "safari15_5"]
+
+def _probe_url():
+    p = [("query", "cardiology"), ("sources", "mongodb_query")] + [("cdo_ids", c) for c in CDO_IDS]
+    p += [("radius", RADIUS), ("limit", "100"), ("entity_type", "p"), ("partner", "cdo_hybrid"),
+          ("distance", RADIUS), ("with_filters", "true"), ("edit_distance", "1")]
+    return API + "?" + urllib.parse.urlencode(p)
+
+_session = None
+def _get_session():
+    """Build a curl_cffi session, auto-selecting a browser fingerprint the gateway accepts."""
+    global _session
+    if _session is not None:
+        return _session
+    for tgt in IMPERSONATE_TARGETS:
+        try:
+            s = creq.Session(impersonate=tgt)
+            try:  # warm up: load find-care page so any anti-bot cookies are set on the session
+                s.get(WARMUP_URL, headers={"referer": "https://www.optum.com/"}, timeout=40)
+            except Exception:
+                pass
+            r = s.get(_probe_url(), headers=CURL_HEADERS, timeout=40)
+            if r.status_code == 200:
+                print(f"   transport OK with impersonate={tgt}")
+                _session = s
+                return _session
+            print(f"   impersonate={tgt} -> HTTP {r.status_code}")
+        except Exception as e:
+            print(f"   impersonate={tgt} -> {e}")
+    print("   ! no fingerprint accepted by the gateway", file=sys.stderr)
+    return None
 
 # Broad sweep of specialty-style query terms (fuzzy matched; noise is fine, we dedupe by NPI)
 SPECIALTY_TERMS = [
@@ -84,19 +119,22 @@ LOCATION_TERMS = [
 def fetch(term):
     params = [("query", term), ("sources", "mongodb_query")]
     params += [("cdo_ids", c) for c in CDO_IDS]
-    params += [("radius", "100"), ("limit", str(LIMIT)), ("entity_type", "p"),
-               ("partner", "cdo_hybrid"), ("distance", "100"),
+    params += [("radius", RADIUS), ("limit", str(LIMIT)), ("entity_type", "p"),
+               ("partner", "cdo_hybrid"), ("distance", RADIUS),
                ("with_filters", "true"), ("edit_distance", "1")]
     url = API + "?" + urllib.parse.urlencode(params)
     for attempt in range(4):
         try:
             if _HAVE_CURL:
-                r = creq.get(url, headers=HEADERS, impersonate="chrome", timeout=40)
+                s = _get_session()
+                if s is None:
+                    return None
+                r = s.get(url, headers=CURL_HEADERS, timeout=40)
                 if r.status_code != 200:
                     raise RuntimeError(f"HTTP {r.status_code}")
                 return r.json()
             else:
-                req = urllib.request.Request(url, headers=HEADERS)
+                req = urllib.request.Request(url, headers=URLLIB_HEADERS)
                 with urllib.request.urlopen(req, timeout=40) as resp:
                     return json.loads(resp.read().decode("utf-8"))
         except Exception as exc:
