@@ -24,10 +24,29 @@ Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 
 ## Run
 
+### Option A — offline, from the NPPES full file (no network needed)
+
+Download the **NPPES Data Dissemination — Full Replacement Monthly NPI File**
+from https://download.cms.gov/nppes/NPI_Files.html (the large ~1 GB zip, **NOT**
+the "Weekly Incremental" files — those contain only one week of changes). Unzip
+it and point the script at the `npidata_pfile_*.csv`:
+
+```bash
+python3 optum_ny_providers.py \
+  --from-file npidata_pfile_YYYYMMDD-YYYYMMDD.csv \
+  --taxonomy-file nucc_taxonomy_*.csv \   # optional: maps specialty codes -> names
+  --out optum_ny_providers.xlsx
+```
+
+The optional NUCC taxonomy crosswalk (https://nucc.org/ -> Code Sets) turns
+specialty codes like `207Q00000X` into "Family Medicine". Without it, the
+`specialty` column shows the raw taxonomy code.
+
+### Option B — live, from the NPPES API (needs allowlist)
+
 ```bash
 python3 optum_ny_providers.py --out optum_ny_providers.xlsx
-# locations only (faster):
-python3 optum_ny_providers.py --skip-providers
+python3 optum_ny_providers.py --skip-providers   # locations only, faster
 ```
 
 ## Output

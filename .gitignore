@@ -1,2 +1,11 @@
+# Large NPPES data dumps — not committed (download separately, see README_optum_ny.md)
+data/
+npidata_pfile_*
+pl_pfile_*
+othername_pfile_*
+endpoint_pfile_*
+*.zip
+
+# Python
 __pycache__/
 *.pyc

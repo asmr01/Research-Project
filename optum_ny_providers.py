@@ -26,6 +26,8 @@ Usage
 from __future__ import annotations
 
 import argparse
+import csv
+import os
 import sys
 import time
 from dataclasses import dataclass, field
@@ -33,6 +35,9 @@ from typing import Any, Iterable
 
 import urllib.parse
 import urllib.request
+
+# Allow very large CSV fields (NPPES rows are wide).
+csv.field_size_limit(10_000_000)
 
 API = "https://npiregistry.cms.hhs.gov/api/"
 API_VERSION = "2.1"
@@ -54,6 +59,133 @@ OPTUM_NY_BRANDS = [
 OPTUM_NAME_HINTS = (
     "optum", "caremount", "prohealth", "riverside medical", "crystal run",
 )
+
+
+# --- NPPES full-file (npidata_pfile) column indices (0-based) ---
+COL_NPI = 0
+COL_ENTITY = 1          # "1" individual, "2" organization
+COL_ORG_NAME = 4
+COL_LAST = 5
+COL_FIRST = 6
+COL_CRED = 10
+COL_ADDR1 = 28
+COL_ADDR2 = 29
+COL_CITY = 30
+COL_STATE = 31
+COL_ZIP = 32
+COL_PHONE = 34
+# Taxonomy: 15 groups of 4 cols starting at 47; primary switch 3 cols after code.
+TAX_FIRST = 47
+TAX_GROUPS = 15
+
+
+def _primary_taxonomy(row: list[str]) -> str:
+    """Return the primary taxonomy code from an npidata row (fallback: first code)."""
+    first = ""
+    for k in range(TAX_GROUPS):
+        code_i = TAX_FIRST + 4 * k
+        sw_i = code_i + 3
+        if code_i >= len(row):
+            break
+        code = row[code_i].strip()
+        if not code:
+            continue
+        if not first:
+            first = code
+        if sw_i < len(row) and row[sw_i].strip().upper() == "Y":
+            return code
+    return first
+
+
+def load_taxonomy_map(path: str | None) -> dict[str, str]:
+    """Optional NUCC taxonomy crosswalk (Code -> 'Classification - Specialization')."""
+    if not path or not os.path.exists(path):
+        return {}
+    out: dict[str, str] = {}
+    with open(path, newline="", encoding="utf-8-sig") as fh:
+        for r in csv.DictReader(fh):
+            code = (r.get("Code") or "").strip()
+            if not code:
+                continue
+            cls = (r.get("Classification") or "").strip()
+            spec = (r.get("Specialization") or "").strip()
+            out[code] = f"{cls} - {spec}" if spec else cls
+    return out
+
+
+def load_from_file(npidata_path: str, taxonomy_path: str | None = None
+                   ) -> tuple[dict[str, "Location"], list[dict[str, Any]]]:
+    """Parse a full NPPES npidata_pfile CSV offline.
+
+    Streams the file once: collects NY Optum-owned org locations (entity type 2)
+    and NY individuals (entity type 1), then joins individuals to locations by
+    practice street + ZIP.
+    """
+    taxmap = load_taxonomy_map(taxonomy_path)
+    locs: dict[str, Location] = {}
+    individuals: list[dict[str, Any]] = []
+
+    with open(npidata_path, newline="", encoding="utf-8", errors="replace") as fh:
+        reader = csv.reader(fh)
+        next(reader, None)  # header
+        for row in reader:
+            if len(row) <= COL_STATE or row[COL_STATE].strip() != "NY":
+                continue
+            entity = row[COL_ENTITY].strip()
+            addr = {
+                "address_1": row[COL_ADDR1], "address_2": row[COL_ADDR2],
+                "postal_code": row[COL_ZIP],
+            }
+            street, zip5 = _norm_street(addr), _zip5(addr)
+            if entity == "2":
+                name = row[COL_ORG_NAME].strip()
+                if not any(h in name.lower() for h in OPTUM_NAME_HINTS):
+                    continue
+                npi = row[COL_NPI].strip()
+                locs[npi] = Location(
+                    npi=npi, name=name, brand=_brand_of(name), street=street,
+                    city=row[COL_CITY].title(), state="NY", zip5=zip5,
+                    phone=row[COL_PHONE].strip(),
+                )
+            elif entity == "1":
+                code = _primary_taxonomy(row)
+                individuals.append({
+                    "provider_npi": row[COL_NPI].strip(),
+                    "first_name": row[COL_FIRST].title(),
+                    "last_name": row[COL_LAST].title(),
+                    "credential": row[COL_CRED].strip(),
+                    "specialty": taxmap.get(code, code),
+                    "_key": (street, zip5),
+                })
+
+    by_key = {loc.key: loc for loc in locs.values()}
+    joined: list[dict[str, Any]] = []
+    for ind in individuals:
+        loc = by_key.get(ind.pop("_key"))
+        if not loc:
+            continue
+        ind.update({
+            "location_name": loc.name, "brand": loc.brand, "location_npi": loc.npi,
+            "street": loc.street, "city": loc.city, "state": loc.state,
+            "zip": loc.zip5, "phone": loc.phone,
+        })
+        joined.append(ind)
+        loc.providers.append(ind)
+    print(f"  -> {len(locs)} Optum NY locations, {len(joined)} providers matched")
+    return locs, joined
+
+
+def _brand_of(name: str) -> str:
+    n = name.lower()
+    if "caremount" in n:
+        return "CareMount (Optum)"
+    if "prohealth" in n:
+        return "ProHEALTH (Optum)"
+    if "crystal run" in n:
+        return "Crystal Run Healthcare (Optum)"
+    if "riverside medical" in n:
+        return "Riverside Medical Group (Optum)"
+    return "Optum Medical Care"
 
 
 def _get(params: dict[str, Any], retries: int = 4) -> dict[str, Any]:
@@ -256,14 +388,24 @@ def main(argv: Iterable[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", default="optum_ny_providers.xlsx", help="output .xlsx path")
     ap.add_argument("--skip-providers", action="store_true",
-                    help="only build the locations sheet (faster)")
+                    help="only build the locations sheet (faster; API mode)")
+    ap.add_argument("--from-file", metavar="NPIDATA_CSV",
+                    help="parse a full NPPES npidata_pfile CSV offline (no network)")
+    ap.add_argument("--taxonomy-file", metavar="NUCC_CSV",
+                    help="optional NUCC taxonomy crosswalk to map specialty codes to names")
     args = ap.parse_args(list(argv) if argv is not None else None)
 
-    locs = collect_locations()
+    if args.from_file:
+        locs, providers = load_from_file(args.from_file, args.taxonomy_file)
+    else:
+        locs = collect_locations()
+        providers = [] if args.skip_providers else collect_providers(locs)
+
     if not locs:
-        print("No Optum locations returned. Is the NPPES host allowlisted?", file=sys.stderr)
+        hint = ("Is this the FULL monthly npidata file (not the weekly)?"
+                if args.from_file else "Is the NPPES host allowlisted?")
+        print(f"No Optum locations found. {hint}", file=sys.stderr)
         return 1
-    providers = [] if args.skip_providers else collect_providers(locs)
     write_excel(args.out, locs, providers)
     return 0
 
