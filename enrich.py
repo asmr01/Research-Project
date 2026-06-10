@@ -235,8 +235,8 @@ rows = list(csv.DictReader(open(SRC, encoding="utf-8-sig")))
 wb = Workbook()
 wsP = wb.active; wsP.title = "Providers"
 pcols = ["provider_npi","first_name","last_name","credential","provider_type","specialty",
-         "specialty_group","specialty_code","brand","location_name","region","county",
-         "city","zip","street","phone","location_npi"]
+         "specialty_group","specialty_code","match_confidence","brand","location_name","region",
+         "county","city","zip","street","phone","location_npi"]
 wsP.append(pcols)
 unmapped_spec, unmapped_cty = set(), set()
 cnt_cty_grp = collections.Counter()   # (county, specialty_group)
@@ -252,8 +252,8 @@ for r in rows:
     grp = SPEC_GROUP.get(code, _OT)
     pt  = provider_type(code)
     wsP.append([r["provider_npi"], r["first_name"], r["last_name"], r["credential"], pt, name,
-                grp, code, r["brand"], r["location_name"], reg, cty, r["city"], r["zip"],
-                r["street"], r["phone"], r["location_npi"]])
+                grp, code, r.get("match_confidence",""), r["brand"], r["location_name"], reg, cty,
+                r["city"], r["zip"], r["street"], r["phone"], r["location_npi"]])
     cnt_cty_grp[(cty, grp)] += 1
     cnt_cty_pt[(cty, pt)] += 1
     cnt_reg_grp[(reg, grp)] += 1
