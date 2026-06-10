@@ -6,6 +6,10 @@ othername_pfile_*
 endpoint_pfile_*
 *.zip
 
+# Generated output spreadsheets (delivered to user / emailed, not committed)
+*.xlsx
+*.csv
+
 # Python
 __pycache__/
 *.pyc
