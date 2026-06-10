@@ -3,8 +3,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
-SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/ffaf3307-optum_ny_providers.csv"
-LOC_SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/1581b988-optum_ny_locations.csv"
+SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/c21cdcfb-optum_ny_providers.csv"
+LOC_SRC = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/17bd0d38-optum_ny_locations.csv"
 OUT = "/home/user/Research-Project/optum_ny_providers_enriched.xlsx"
 
 # --- NUCC taxonomy code -> readable specialty (verified) ---
@@ -179,16 +179,24 @@ def provider_type(code):
     if code.startswith("363A"): return "Physician Assistant"
     if code.startswith("213E"): return "Podiatrist (DPM)"
     if code.startswith("1223") or code == "122300000X": return "Dentist"
-    if code.startswith("103T") or code.startswith("1041") or code == "104100000X" or code.startswith("101Y"):
+    if (code.startswith("103") or code.startswith("106") or code.startswith("101Y")
+            or code.startswith("1041") or code == "104100000X"):
         return "Behavioral Health (non-MD)"
-    if (code.startswith("2251") or code.startswith("2252") or code.startswith("225X")
-            or code in ("225100000X","225200000X") or code.startswith("235Z") or code.startswith("231H")):
+    if (code.startswith("2251") or code.startswith("2252") or code.startswith("2254")
+            or code.startswith("2255") or code.startswith("2257") or code.startswith("225X")
+            or code in ("225100000X","225200000X") or code.startswith("235") or code.startswith("231H")
+            or code.startswith("224Y") or code.startswith("124Q")):
         return "Therapy & Rehab"
-    if (code.startswith("163W") or code.startswith("364S") or code == "367500000X" or code.startswith("367A")
-            or code.startswith("176B") or code == "183500000X" or code.startswith("133V") or code.startswith("152W")
-            or code == "171100000X" or code == "170300000X"):
+    if (code.startswith("163W") or code.startswith("164W") or code.startswith("364S")
+            or code == "367500000X" or code.startswith("367A") or code.startswith("176B")
+            or code.startswith("1835") or code.startswith("133") or code.startswith("152W")
+            or code.startswith("111N") or code.startswith("156F") or code.startswith("246Z")
+            or code.startswith("2377") or code.startswith("374U") or code == "171100000X"
+            or code.startswith("1701") or code == "170300000X"):
         return "Other Clinical"
-    if code == "174400000X" or code.startswith("171W") or code == "390200000X" or code.startswith("261Q"):
+    if (code == "174400000X" or code.startswith("171W") or code.startswith("171M")
+            or code.startswith("172V") or code.startswith("175T") or code.startswith("174H")
+            or code == "390200000X" or code.startswith("261Q")):
         return "Other / Non-clinical"
     if code[:3] in ("207","208","204"): return "Physician (MD/DO)"
     return "Other / Non-clinical"
@@ -228,6 +236,61 @@ SPEC_GROUP = {
  "171W00000X":_OT,"207QH0002X":_PC,"207VH0002X":_WH,"163W00000X":_AH,"2251P0200X":_AH,
  "364SA2200X":_PC,
 }
+
+# Additional codes that appear once building-level matches are included
+SPEC.update({
+ "2086S0122X":"Surgery, Plastic & Reconstructive Surgery","103TC1900X":"Psychologist, Counseling",
+ "225400000X":"Rehabilitation Counselor","374U00000X":"Home Health Aide",
+ "1835P0018X":"Pharmacist, Pharmacotherapy","133N00000X":"Nutritionist",
+ "2084P0804X":"Psychiatry, Addiction Psychiatry","207LP3000X":"Anesthesiology, Pediatric Anesthesiology",
+ "2255A2300X":"Athletic Trainer","224Y00000X":"Clinical Exercise Physiologist",
+ "111N00000X":"Chiropractor","1223P0300X":"Dentist, Periodontics",
+ "207RT0003X":"Internal Medicine, Transplant Hepatology","246Z00000X":"Specialist/Technologist, Other",
+ "106S00000X":"Behavior Technician","163WX0003X":"Registered Nurse, Critical Care",
+ "2085N0904X":"Radiology, Neuroradiology","124Q00000X":"Speech/Hearing Provider",
+ "225700000X":"Massage Therapist","1223S0112X":"Dentist, Oral & Maxillofacial Surgery",
+ "106H00000X":"Marriage & Family Therapist","103K00000X":"Behavior Analyst",
+ "235500000X":"Specialist/Technologist, Speech-Language","204E00000X":"Oral & Maxillofacial Surgery",
+ "2088F0040X":"Urology, Female Pelvic Medicine & Reconstructive Surgery","156F00000X":"Technician/Technologist",
+ "171M00000X":"Case Manager/Care Coordinator","207VX0201X":"Obstetrics & Gynecology, Gynecologic Oncology",
+ "207YX0901X":"Otolaryngology, Facial Plastic Surgery","207LP2900X":"Anesthesiology, Pain Medicine",
+ "237700000X":"Hearing Instrument Specialist","156FX1800X":"Optician",
+ "163WP0808X":"Registered Nurse, Psychiatric/Mental Health","163WP2201X":"Registered Nurse, Pediatrics",
+ "246ZE0600X":"Specialist/Technologist, Electroneurodiagnostic","246ZE0500X":"Specialist/Technologist, EEG",
+ "172V00000X":"Community Health Worker","261QP2300X":"Clinic/Center, Primary Care",
+ "207YP0228X":"Otolaryngology, Pediatric Otolaryngology","2086X0206X":"Surgery, Surgical Oncology",
+ "207RA0001X":"Internal Medicine, Advanced Heart Failure & Transplant Cardiology",
+ "207VF0040X":"Obstetrics & Gynecology, Female Pelvic Medicine & Reconstructive Surgery",
+ "2085R0001X":"Radiology, Radiation Oncology","175T00000X":"Peer Specialist",
+ "207XS0117X":"Orthopaedic Surgery, Spine Surgery","103TB0200X":"Psychologist, Cognitive & Behavioral",
+ "207VX0000X":"Obstetrics & Gynecology, Obstetrics","163WH0200X":"Registered Nurse, Home Health",
+ "2080P0008X":"Pediatrics, Pediatric Medical Toxicology","103G00000X":"Clinical Neuropsychologist",
+ "2084N0402X":"Neurology w/ Child Neurology","101Y00000X":"Counselor",
+ "207ZP0105X":"Pathology, Clinical Pathology","207ZH0000X":"Pathology, Hematology",
+ "207NP0225X":"Dermatology, Pediatric Dermatology","2084V0102X":"Psychiatry & Neurology, Vascular Neurology",
+ "163WS0200X":"Registered Nurse, School","1223P0700X":"Dentist, Prosthodontics",
+ "164W00000X":"Licensed Practical Nurse","152WV0400X":"Optometrist, Low Vision Rehabilitation",
+ "204D00000X":"Neuromusculoskeletal Medicine & OMM","111NS0005X":"Chiropractor, Sports Physician",
+ "101YA0400X":"Counselor, Addiction","103TS0200X":"Psychologist, School",
+ "174H00000X":"Health Educator","170100000X":"Medical Genetics (PhD)",
+ "204F00000X":"Transplant Surgery","213ES0131X":"Podiatrist, Sports Medicine",
+})
+SPEC_GROUP.update({
+ "2086S0122X":_SS,"103TC1900X":_BH,"225400000X":_BH,"374U00000X":_AH,"1835P0018X":_AH,
+ "133N00000X":_AH,"2084P0804X":_BH,"207LP3000X":_AP,"2255A2300X":_AH,"224Y00000X":_AH,
+ "111N00000X":_AH,"1223P0300X":_AH,"207RT0003X":_MS,"246Z00000X":_AH,"106S00000X":_BH,
+ "163WX0003X":_AH,"2085N0904X":_DX,"124Q00000X":_AH,"225700000X":_AH,"1223S0112X":_SS,
+ "106H00000X":_BH,"103K00000X":_BH,"235500000X":_AH,"204E00000X":_SS,"2088F0040X":_SS,
+ "156F00000X":_AH,"171M00000X":_OT,"207VX0201X":_ONC,"207YX0901X":_SS,"207LP2900X":_AP,
+ "237700000X":_AH,"156FX1800X":_AH,"163WP0808X":_AH,"163WP2201X":_AH,"246ZE0600X":_AH,
+ "246ZE0500X":_AH,"172V00000X":_OT,"261QP2300X":_OT,"207YP0228X":_SS,"2086X0206X":_ONC,
+ "207RA0001X":_CARD,"207VF0040X":_WH,"2085R0001X":_ONC,"175T00000X":_OT,"207XS0117X":_SS,
+ "103TB0200X":_BH,"207VX0000X":_WH,"163WH0200X":_AH,"2080P0008X":_MS,"103G00000X":_BH,
+ "2084N0402X":_MS,"101Y00000X":_BH,"207ZP0105X":_DX,"207ZH0000X":_DX,"207NP0225X":_MS,
+ "2084V0102X":_MS,"163WS0200X":_AH,"1223P0700X":_AH,"164W00000X":_AH,"152WV0400X":_AH,
+ "204D00000X":_AP,"111NS0005X":_AH,"101YA0400X":_BH,"103TS0200X":_BH,"174H00000X":_OT,
+ "170100000X":_MS,"204F00000X":_SS,"213ES0131X":_AH,
+})
 
 rows = list(csv.DictReader(open(SRC, encoding="utf-8-sig")))
 
