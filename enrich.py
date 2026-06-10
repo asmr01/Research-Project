@@ -162,30 +162,100 @@ def county(city, zip5):
     if c: return c
     return ZIP3.get(zip5[:3], "")
 
+# --- County -> region (territory planning) ---
+REGION_ORDER = ["New York City","Long Island","Lower Hudson Valley","Mid-Hudson Valley","Capital Region"]
+COUNTY_REGION = {
+ "Manhattan":"New York City","Brooklyn":"New York City","Queens":"New York City",
+ "Bronx":"New York City","Staten Island":"New York City",
+ "Nassau":"Long Island","Suffolk":"Long Island",
+ "Westchester":"Lower Hudson Valley","Rockland":"Lower Hudson Valley","Putnam":"Lower Hudson Valley",
+ "Orange":"Mid-Hudson Valley","Dutchess":"Mid-Hudson Valley","Ulster":"Mid-Hudson Valley","Sullivan":"Mid-Hudson Valley",
+ "Albany":"Capital Region",
+}
+
+# --- Provider type (recruitment buckets) by taxonomy code ---
+def provider_type(code):
+    if code.startswith("363L"): return "Nurse Practitioner"
+    if code.startswith("363A"): return "Physician Assistant"
+    if code.startswith("213E"): return "Podiatrist (DPM)"
+    if code.startswith("1223") or code == "122300000X": return "Dentist"
+    if code.startswith("103T") or code.startswith("1041") or code == "104100000X" or code.startswith("101Y"):
+        return "Behavioral Health (non-MD)"
+    if (code.startswith("2251") or code.startswith("2252") or code.startswith("225X")
+            or code in ("225100000X","225200000X") or code.startswith("235Z") or code.startswith("231H")):
+        return "Therapy & Rehab"
+    if (code.startswith("163W") or code.startswith("364S") or code == "367500000X" or code.startswith("367A")
+            or code.startswith("176B") or code == "183500000X" or code.startswith("133V") or code.startswith("152W")
+            or code == "171100000X" or code == "170300000X"):
+        return "Other Clinical"
+    if code == "174400000X" or code.startswith("171W") or code == "390200000X" or code.startswith("261Q"):
+        return "Other / Non-clinical"
+    if code[:3] in ("207","208","204"): return "Physician (MD/DO)"
+    return "Other / Non-clinical"
+
+# --- Specialty group (clinical area) by taxonomy code ---
+GROUP_ORDER = ["Primary Care","Medical Specialties","Surgical Specialties","Women's Health",
+               "Behavioral Health","Emergency & Hospital Med","Anesthesia/Pain/PM&R",
+               "Diagnostics (Rad/Path)","Allied Health","Other"]
+_PC="Primary Care";_MS="Medical Specialties";_SS="Surgical Specialties";_WH="Women's Health"
+_BH="Behavioral Health";_EH="Emergency & Hospital Med";_AP="Anesthesia/Pain/PM&R"
+_DX="Diagnostics (Rad/Path)";_AH="Allied Health";_OT="Other"
+SPEC_GROUP = {
+ "363LF0000X":_PC,"207R00000X":_PC,"225100000X":_AH,"207Q00000X":_PC,"207V00000X":_WH,
+ "363A00000X":_PC,"363AM0700X":_PC,"208000000X":_PC,"208M00000X":_EH,"207RC0000X":_MS,
+ "207RG0100X":_MS,"363LA2200X":_PC,"207L00000X":_AP,"2085R0202X":_DX,"363AS0400X":_SS,
+ "207X00000X":_SS,"207RE0101X":_MS,"2084N0400X":_MS,"207RP1001X":_MS,"183500000X":_AH,
+ "363L00000X":_PC,"207RR0500X":_MS,"208800000X":_SS,"207N00000X":_MS,"208600000X":_SS,
+ "174400000X":_OT,"207RH0003X":_MS,"225X00000X":_AH,"207W00000X":_SS,"207P00000X":_EH,
+ "207RN0300X":_MS,"367A00000X":_WH,"208100000X":_AP,"213E00000X":_AH,"133V00000X":_AH,
+ "207RG0300X":_PC,"213ES0103X":_AH,"2084P0800X":_BH,"207QS0010X":_PC,"207XS0106X":_SS,
+ "207RC0001X":_MS,"207RI0011X":_MS,"363LA2100X":_PC,"207RI0200X":_MS,"207Y00000X":_SS,
+ "1041C0700X":_BH,"1223G0001X":_AH,"1223P0221X":_AH,"170300000X":_OT,"231H00000X":_AH,
+ "207ZP0102X":_DX,"207RS0010X":_MS,"152W00000X":_AH,"103TC0700X":_BH,"363LW0102X":_WH,
+ "2251X0800X":_AH,"208G00000X":_SS,"2081P2900X":_AP,"207K00000X":_MS,"2086S0129X":_SS,
+ "207YX0905X":_SS,"207VM0101X":_WH,"2086S0105X":_SS,"208VP0014X":_AP,"208VP0000X":_AP,
+ "208200000X":_SS,"363LX0001X":_WH,"2080P0205X":_MS,"176B00000X":_WH,"163WD0400X":_AH,
+ "367500000X":_AP,"2085R0204X":_DX,"225200000X":_AH,"225XH1200X":_AH,"104100000X":_BH,
+ "1223X0400X":_AH,"207RA0201X":_MS,"207ND0101X":_MS,"207PH0002X":_EH,"207VG0400X":_WH,
+ "2080A0000X":_PC,"207RC0200X":_EH,"207XX0801X":_SS,"103TF0000X":_BH,"363LC1500X":_PC,
+ "207ZD0900X":_DX,"171100000X":_AH,"235Z00000X":_AH,"363LP0808X":_BH,"207XX0004X":_SS,
+ "207QA0505X":_PC,"207ZP0101X":_DX,"363LP0200X":_PC,"207RX0202X":_MS,"207QA0000X":_PC,
+ "207XS0114X":_SS,"207T00000X":_SS,"2085D0003X":_DX,"2080P0206X":_MS,"363LP2300X":_PC,
+ "2085N0700X":_DX,"213EP1101X":_AH,"207NS0135X":_MS,"207XX0005X":_SS,"207QB0002X":_PC,
+ "390200000X":_OT,"363LC0200X":_EH,"122300000X":_AH,"207YS0123X":_SS,"261QR0400X":_OT,
+ "103T00000X":_BH,"225XP0019X":_AH,"207WX0107X":_SS,"101YM0800X":_BH,"2081S0010X":_AP,
+ "171W00000X":_OT,"207QH0002X":_PC,"207VH0002X":_WH,"163W00000X":_AH,"2251P0200X":_AH,
+ "364SA2200X":_PC,
+}
+
 rows = list(csv.DictReader(open(SRC, encoding="utf-8-sig")))
 
 # --- Build workbook ---
 wb = Workbook()
 wsP = wb.active; wsP.title = "Providers"
-pcols = ["provider_npi","first_name","last_name","credential","specialty","specialty_code",
-         "brand","location_name","county","city","zip","street","phone","location_npi"]
+pcols = ["provider_npi","first_name","last_name","credential","provider_type","specialty",
+         "specialty_group","specialty_code","brand","location_name","region","county",
+         "city","zip","street","phone","location_npi"]
 wsP.append(pcols)
-loc_agg = {}     # location_npi -> dict
 unmapped_spec, unmapped_cty = set(), set()
+cnt_cty_grp = collections.Counter()   # (county, specialty_group)
+cnt_cty_pt  = collections.Counter()   # (county, provider_type)
+cnt_reg_grp = collections.Counter()   # (region, specialty_group)
 for r in rows:
     code = r["specialty"]
     name = SPEC.get(code, code)
     if code not in SPEC: unmapped_spec.add(code)
     cty = county(r["city"], r["zip"])
     if not cty: unmapped_cty.add((r["city"], r["zip"]))
-    wsP.append([r["provider_npi"], r["first_name"], r["last_name"], r["credential"], name, code,
-                r["brand"], r["location_name"], cty, r["city"], r["zip"], r["street"],
-                r["phone"], r["location_npi"]])
-    k = r["location_npi"]
-    if k not in loc_agg:
-        loc_agg[k] = {"name":r["location_name"],"brand":r["brand"],"street":r["street"],
-                      "city":r["city"],"county":cty,"zip":r["zip"],"phone":r["phone"],"n":0}
-    loc_agg[k]["n"] += 1
+    reg = COUNTY_REGION.get(cty, "")
+    grp = SPEC_GROUP.get(code, _OT)
+    pt  = provider_type(code)
+    wsP.append([r["provider_npi"], r["first_name"], r["last_name"], r["credential"], pt, name,
+                grp, code, r["brand"], r["location_name"], reg, cty, r["city"], r["zip"],
+                r["street"], r["phone"], r["location_npi"]])
+    cnt_cty_grp[(cty, grp)] += 1
+    cnt_cty_pt[(cty, pt)] += 1
+    cnt_reg_grp[(reg, grp)] += 1
 
 wsL = wb.create_sheet("Locations")
 lcols = ["location_npi","name","brand","county","city","zip","street","phone","provider_count"]
@@ -197,7 +267,36 @@ for lr in loc_rows:
     wsL.append([lr["location_npi"], lr["name"], lr["brand"], cty, lr["city"], lr["zip"],
                 lr["street"], lr["phone"], int(lr["provider_count"])])
 
-# formatting
+# --- Pivot tabs (static cross-tabs with totals) ---
+PT_ORDER = ["Physician (MD/DO)","Nurse Practitioner","Physician Assistant","Podiatrist (DPM)",
+            "Dentist","Behavioral Health (non-MD)","Therapy & Rehab","Other Clinical","Other / Non-clinical"]
+# counties ordered by region then name
+counties_present = sorted({county(r["city"], r["zip"]) for r in rows},
+                          key=lambda c: (REGION_ORDER.index(COUNTY_REGION.get(c,"Capital Region")), c))
+
+def add_pivot(title, row_label, row_keys, col_keys, counter, row_region=False):
+    ws = wb.create_sheet(title)
+    header = ([ "Region", row_label] if row_region else [row_label]) + list(col_keys) + ["Total"]
+    ws.append(header)
+    col_tot = collections.Counter(); grand = 0
+    for rk in row_keys:
+        vals = [counter.get((rk, ck), 0) for ck in col_keys]
+        rt = sum(vals)
+        line = ([COUNTY_REGION.get(rk,""), rk] if row_region else [rk]) + vals + [rt]
+        ws.append(line)
+        for ck, v in zip(col_keys, vals): col_tot[ck] += v
+        grand += rt
+    totline = (["",""] if row_region else [""])
+    totline[-1] = "TOTAL"
+    ws.append(totline + [col_tot[ck] for ck in col_keys] + [grand])
+    return ws
+
+p1 = add_pivot("Pivot-County x SpecGroup", "County", counties_present, GROUP_ORDER, cnt_cty_grp, row_region=True)
+p2 = add_pivot("Pivot-County x ProviderType", "County", counties_present, PT_ORDER, cnt_cty_pt, row_region=True)
+p3 = add_pivot("Pivot-Region x SpecGroup", "Region",
+               [r for r in REGION_ORDER if any(k[0]==r for k in cnt_reg_grp)], GROUP_ORDER, cnt_reg_grp)
+
+# formatting: data sheets get filters+freeze; pivots get bold header + bold total row
 for ws in (wsP, wsL):
     for cell in ws[1]:
         cell.font = Font(bold=True); cell.alignment = Alignment(vertical="center")
@@ -206,6 +305,14 @@ for ws in (wsP, wsL):
     for i in range(1, ws.max_column+1):
         w = max((len(str(ws.cell(row=r, column=i).value or "")) for r in range(1, min(ws.max_row,400)+1)), default=10)
         ws.column_dimensions[get_column_letter(i)].width = min(max(w+2, 11), 48)
+
+for ws in (p1, p2, p3):
+    for cell in ws[1]: cell.font = Font(bold=True)
+    for cell in ws[ws.max_row]: cell.font = Font(bold=True)
+    ws.freeze_panes = "B2"
+    for i in range(1, ws.max_column+1):
+        w = max((len(str(ws.cell(row=r, column=i).value or "")) for r in range(1, ws.max_row+1)), default=10)
+        ws.column_dimensions[get_column_letter(i)].width = min(max(w+2, 9), 26)
 
 wb.save(OUT)
 print("Saved", OUT)
