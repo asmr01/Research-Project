@@ -1,12 +1,7 @@
-/* Optum NY directory scraper (FULL roster - no accepting-new-patients filter).
-   RUN IN THE BROWSER CONSOLE on https://www.optum.com/.../optum-new-york/find-care.html
-
-   STEP 1: get a FRESH token: Network tab -> filter provider-search -> search ->
-           click the 200 row -> Copy as cURL -> copy the eyJ... after "authorization: Bearer".
-   STEP 2: paste it between the quotes on the TOKEN line just below (replace PASTE_FRESH_TOKEN_HERE).
-   STEP 3: select ALL, paste into Console, Enter. (If blocked, type: allow pasting, Enter, retry.)
-   STEP 4: wait ~2-3 min -> optum_directory_ny.csv downloads -> upload it.
-*/
+/* Optum NY directory scraper (FULL roster). RUN IN THE BROWSER CONSOLE
+   on an optum.com find-care page. Paste this whole script, press Enter,
+   then paste your Bearer token (or the whole cURL) into the popup.
+   ~2-3 min -> optum_directory_ny.csv downloads. */
 (async () => {
   let TOKEN = (prompt("Paste the Bearer token (eyJ...). Pasting the whole cURL is fine — I'll extract it.") || "");
   // pull eyJ....  out of whatever was pasted, then keep only valid JWT chars (drops spaces/newlines/^/quotes)
