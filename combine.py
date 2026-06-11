@@ -43,6 +43,79 @@ def cred_ptype(name, specialty):
 def parse_city(addr):
     parts=[p.strip() for p in addr.split(",")]
     return parts[-2] if len(parts)>=2 else ""
+
+def primary_specialty(s):
+    """Roll the 129 raw specialty values (two naming conventions) into ~35 clean ones."""
+    n = s.lower()
+    # allied / non-physician roles first (so organ keywords inside don't misfire)
+    if "physical therapist" in n: return "Physical Therapy"
+    if "occupational therapist" in n: return "Occupational Therapy"
+    if "speech" in n and "patholog" in n: return "Speech-Language Pathology"
+    if "audiolog" in n: return "Audiology"
+    if "podiatr" in n: return "Podiatry"
+    if "psycholog" in n: return "Psychology"
+    if "social worker" in n: return "Social Work"
+    if "counselor" in n or "counseling" in n: return "Counseling"
+    if "dietitian" in n or "nutrition" in n: return "Nutrition/Dietetics"
+    if "pharmacist" in n: return "Pharmacy"
+    if "acupunctur" in n: return "Acupuncture"
+    if "genetic counselor" in n: return "Genetic Counseling"
+    if "dentist" in n or "dental" in n: return "Dentistry"
+    if "midwife" in n or "midwifery" in n: return "Midwifery"
+    # NP/PA mapped to clinical area when the name states one
+    if "nurse practitioner, family" in n or "primary care nurse practitioner" in n: return "Family Medicine"
+    if "nurse practitioner, women" in n: return "Obstetrics & Gynecology"
+    if "nurse practitioner, psychiatric" in n or "nurse practitioner, mental" in n: return "Psychiatry"
+    if "nurse practitioner, pediatric" in n: return "Pediatrics"
+    if "nurse practitioner, adult" in n or "nurse practitioner, geront" in n: return "Internal Medicine"
+    # physician clinical specialties (specific subspecialty before generic)
+    if "surgical oncology" in n: return "Surgical Oncology"
+    if "oncology" in n or "hematology" in n: return "Hematology & Oncology"
+    if "cardio" in n or "cardiac" in n or "electrophysiology" in n: return "Cardiology"
+    if "gastro" in n: return "Gastroenterology"
+    if "endocrin" in n: return "Endocrinology"
+    if "nephro" in n: return "Nephrology"
+    if "rheumat" in n: return "Rheumatology"
+    if "pulmonary" in n or "pulmonology" in n: return "Pulmonology"
+    if "infectious" in n: return "Infectious Disease"
+    if "allergy" in n and "otolaryngic" not in n: return "Allergy & Immunology"
+    if "dermat" in n: return "Dermatology"
+    if "otolaryng" in n: return "Otolaryngology (ENT)"
+    if "ophthalmology" in n or "retina specialist" in n or "strabismus" in n: return "Ophthalmology"
+    if "optometr" in n: return "Optometry"
+    if "urology" in n and "neurolog" not in n: return "Urology"
+    if "colon & rectal" in n or "colorectal" in n: return "Colon & Rectal Surgery"
+    if "vascular surgery" in n: return "Vascular Surgery"
+    if "neurosurg" in n or "neurological surgery" in n: return "Neurosurgery"
+    if "plastic" in n: return "Plastic Surgery"
+    if "orthop" in n: return "Orthopaedic Surgery"
+    if "sports medicine" in n: return "Sports Medicine"
+    tail = n.split(",")[-1]   # "Psychiatry & Neurology, Neurology/Psychiatry" -> decide by trailing word
+    if "neurolog" in tail: return "Neurology"
+    if "psychiatr" in tail: return "Psychiatry"
+    if "neurolog" in n: return "Neurology"
+    if "psychiatr" in n: return "Psychiatry"
+    if "pain" in n: return "Pain Medicine"
+    if "physical medicine" in n or "rehabilitation" in n: return "Physical Medicine & Rehab"
+    if "anesthe" in n: return "Anesthesiology"
+    if "radiology" in n: return "Radiology"
+    if "pathology" in n: return "Pathology"
+    if "emergency medicine" in n: return "Emergency Medicine"
+    if "hospitalist" in n: return "Hospital Medicine"
+    if "obstetric" in n or "gynecolog" in n or "maternal & fetal" in n or "female pelvic" in n: return "Obstetrics & Gynecology"
+    if "geriatric" in n: return "Geriatric Medicine"
+    if "critical care" in n: return "Critical Care"
+    if "sleep medicine" in n: return "Sleep Medicine"
+    if "palliative" in n or "hospice" in n: return "Hospice & Palliative"
+    if "pediatric" in n or "developmental" in n or "adolescent medicine" in n: return "Pediatrics"
+    if "family medicine" in n or "family practice" in n: return "Family Medicine"
+    if "internal medicine" in n: return "Internal Medicine"
+    if "primary care" in n: return "Primary Care (General)"
+    if "nurse practitioner" in n or "clinical nurse specialist" in n: return "Nurse Practitioner (General)"
+    if "physician assistant" in n: return "Physician Assistant (General)"
+    if "registered nurse" in n or "nursing" in n: return "Nursing"
+    if "surgery" in n: return "General Surgery"
+    return "Other"
 # extend enrich's county map with towns only present in the directory data
 for _city,_cty in {"pomona":"Rockland","hewlett":"Nassau","north merrick":"Nassau","cedarhurst":"Nassau",
         "port jefferson station":"Suffolk","port jefferson":"Suffolk","miller place":"Suffolk",
@@ -50,8 +123,9 @@ for _city,_cty in {"pomona":"Rockland","hewlett":"Nassau","north merrick":"Nassa
         "croton on hudson":"Westchester","briarcliff manor":"Westchester"}.items():
     enrich.CITY_COUNTY.setdefault(_city,_cty)
 
-COLS = ["npi","display_name","first_name","last_name","gender","provider_type","specialty",
-        "specialty_group","secondary_specialties","enumeration_date","years_since_npi",
+COLS = ["npi","full_name","display_name","first_name","last_name","gender","provider_type",
+        "primary_specialty","specialty","specialty_group","secondary_specialties",
+        "enumeration_date","years_since_npi",
         "accepting_new_patients","employed_or_contract","average_rating",
         "review_count","languages","cdo","region","county","city","zip","address","phone",
         "primary_location_name","num_locations","website_url","schedule_url","source"]
@@ -108,6 +182,11 @@ for npi, row in merged.items():
             row["gender"] = {"M": "Male", "F": "Female"}.get(L["sex"], "")
     else:
         row["enumeration_date"] = ""; row["years_since_npi"] = ""; row["secondary_specialties"] = ""
+
+# 4) clean specialty rollup + conjoined name
+for row in merged.values():
+    row["primary_specialty"] = primary_specialty(row["specialty"])
+    row["full_name"] = (row["first_name"].strip() + " " + row["last_name"].strip()).strip()
 
 # --- write flat workbook (no pivots) ---
 wb=Workbook(); ws=wb.active; ws.title="Providers"
