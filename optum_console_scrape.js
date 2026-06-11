@@ -1,12 +1,15 @@
-/* Optum NY directory scraper — RUN IN THE BROWSER CONSOLE (token embedded).
-   1) Open: https://www.optum.com/en/care/locations/optum-new-york/find-care.html  (do any search)
-   2) F12 -> Console. If paste is blocked, type:  allow pasting  then Enter.
-   3) Paste ALL of this, press Enter. Wait ~2-3 min. optum_directory_ny.csv downloads.
-   NOTE: token below expires ~1 hour after it was minted; if you see 401s, grab a fresh
-   Bearer token (Network -> provider-search -> Copy as cURL) and replace TOKEN's value.
+/* Optum NY directory scraper (FULL roster - no accepting-new-patients filter).
+   RUN IN THE BROWSER CONSOLE on https://www.optum.com/.../optum-new-york/find-care.html
+
+   STEP 1: get a FRESH token: Network tab -> filter provider-search -> search ->
+           click the 200 row -> Copy as cURL -> copy the eyJ... after "authorization: Bearer".
+   STEP 2: paste it between the quotes on the TOKEN line just below (replace PASTE_FRESH_TOKEN_HERE).
+   STEP 3: select ALL, paste into Console, Enter. (If blocked, type: allow pasting, Enter, retry.)
+   STEP 4: wait ~2-3 min -> optum_directory_ny.csv downloads -> upload it.
 */
 (async () => {
-  const TOKEN = "eyJraWQiOiJSdjd2VG9aeE1zNWRTMXBZbUJnRmlLak5oMGxRM3hEclY0QVd6RW9MdENIIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJhdWQiOlsiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL29wdHVtLXNyY2giLCJodHRwczovL2FwaS51aGcuY29tL2FwaS9jcm9zcy1kb21haW4vcHJvZHVjZXIvb3B0dW1yeG1vbmdvIiwiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL3Vwcy1wcm92aWRlci1yZXZpZXctYXBpIiwiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL29wdHVtLWdlbmFpIiwiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL3Vwcy1wcm92aWRlci1zZWFyY2gtYXBpIiwiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL3Vwcy1hdXRvLWNvbXBsZXRlIiwiaHR0cHM6Ly9hcGkudWhnLmNvbS9hcGkvY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL3NlYXJjaGxpdGUiLCJodHRwczovL2FwaS51aGcuY29tL2FwaS9jcm9zcy1kb21haW4vcHJvZHVjZXIvYXV0b2NvbXBsZXRldjEiXSwic3ViIjoiZGM4YTU1NjktMTU3OS00YmZhLWIzNWUtOWIwNWNlOGExMzc4IiwiYXpwIjoiZGM4YTU1NjktMTU3OS00YmZhLWIzNWUtOWIwNWNlOGExMzc4Iiwic2NvcGUiOiJjcm9zcy1kb21haW4vcHJvZHVjZXIvb3B0dW1yeG1vbmdvOmFsbCBjcm9zcy1kb21haW4vcHJvZHVjZXIvdXBzLWF1dG8tY29tcGxldGU6YWxsIGNyb3NzLWRvbWFpbi9wcm9kdWNlci9hdXRvY29tcGxldGV2MTphbGwgY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL3Vwcy1wcm92aWRlci1yZXZpZXctYXBpOmFsbCBjcm9zcy1kb21haW4vcHJvZHVjZXIvdXBzLXByb3ZpZGVyLXNlYXJjaC1hcGk6YWxsIGNyb3NzLWRvbWFpbi9wcm9kdWNlci9zZWFyY2hsaXRlOmFsbCBjcm9zcy1kb21haW4vcHJvZHVjZXIvb3B0dW0tc3JjaDphbGwgY3Jvc3MtZG9tYWluL3Byb2R1Y2VyL29wdHVtLWdlbmFpOmFsbCIsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkudWhnLmNvbSIsInR5cCI6IkJlYXJlciIsIm9pZCI6ImRjOGE1NTY5LTE1NzktNGJmYS1iMzVlLTliMDVjZThhMTM3OCIsImV4cCI6MTc4MTEzMzM2NSwiaWF0IjoxNzgxMTI5NzY1LCJqdGkiOiJjNmU5NDE1Yy1jMDlhLTRlNDYtOTQ0Yy03MGE3NGQ1Y2Q1MjEifQ.SgEP_xxhSHqVNnhwJuXlYgGDOkvQowlPvDtAPjltzgmZCdAxTK9-ZusA-r2XGOffx2r_hAhySSbVmV9tjEn9wbS7mRoOZGwOQYysCsvUtQILVuYpkzNcU0WaB2reCHmFdSTcVGRJhppi9hie_V6WNHNH2UFjDjxYwN8WrfUgeK6esGSjL8mg0bWEvi08xIsgJEzUM8iTgd2jWD1q-Z6CsGQfXAP2ngaAl_W6iBoopO5rJbCX90UCNVkCAia8ezTI01iWGREgwrjXs97Fdyaqlg5WyS6cZakd74OHWeYfBR91dN0ZkCgE9HMTl4yoL4izmNgcK4_f-aIrTuJiGxIlAA";
+  const TOKEN = "PASTE_FRESH_TOKEN_HERE";
+  if (TOKEN.includes("PASTE_FRESH")) { console.log("STOP: replace PASTE_FRESH_TOKEN_HERE with a fresh Bearer token first."); return; }
   const API = "https://api.uhg.com/api/cross-domain/producer/ups-provider-search-api/3.0.0/";
   const CDO = ["13599", "13600", "13601"];
   const SPEC = ["primary care","family medicine","internal medicine","pediatrics","geriatric medicine","nurse practitioner","physician assistant","hospitalist","urgent care","cardiology","cardiovascular disease","interventional cardiology","electrophysiology","nuclear cardiology","pediatric cardiology","heart failure","oncology","hematology","hematology oncology","medical oncology","radiation oncology","surgical oncology","gynecologic oncology","gastroenterology","endocrinology","nephrology","rheumatology","pulmonary","pulmonology","infectious disease","allergy immunology","sleep medicine","dermatology","neurology","physical medicine rehabilitation","pain management","anesthesiology","obstetrics gynecology","maternal fetal medicine","midwife","urology","orthopaedic surgery","orthopedics","sports medicine","podiatry","neurosurgery","general surgery","vascular surgery","plastic surgery","colorectal surgery","otolaryngology","ent","ophthalmology","optometry","audiology","radiology","interventional radiology","pathology","emergency medicine","psychiatry","psychology","behavioral health","social work","counselor","physical therapy","occupational therapy","speech language pathology","dietitian","nutrition","pharmacy","pharmacist","chiropractic","acupuncture","dentist","dental","oral surgery","orthodontics","periodontics","prosthodontics","wound care","palliative","registered nurse","clinical nurse specialist"];
@@ -18,9 +21,9 @@
     const p = new URLSearchParams();
     p.append("query", term); p.append("sources", "mongodb_query");
     CDO.forEach(c => p.append("cdo_ids", c));
-    p.append("radius", "25"); p.append("limit", "100"); p.append("partner", "cdo_hybrid");
-    p.append("distance", "25"); p.append("re_new_patient", "true");
-    p.append("with_filters", "true"); p.append("edit_distance", "1");
+    p.append("radius", "25"); p.append("limit", "100"); p.append("entity_type", "p");
+    p.append("partner", "cdo_hybrid"); p.append("distance", "25");
+    p.append("with_filters", "true"); p.append("edit_distance", "1");   // re_new_patient removed = full roster
     return API + "?" + p.toString();
   };
   const langs = v => Array.isArray(v) ? v.map(x => (x && x.name) ? x.name : x).filter(Boolean).join("; ") : "";
@@ -39,7 +42,7 @@
     i++;
     try {
       const res = await fetch(url(term), { headers: { "accept": "application/json, text/plain, */*", "authorization": "Bearer " + TOKEN } });
-      if (res.status === 401) { auth401++; console.log(`[${i}/${terms.length}] ${kind}:${term} -> 401 (token expired?)`); if (auth401 >= 3) { console.log("Multiple 401s — token likely expired. Get a fresh Bearer token and update TOKEN."); break; } await sleep(400); continue; }
+      if (res.status === 401) { auth401++; console.log(`[${i}/${terms.length}] ${kind}:${term} -> 401 (token expired?)`); if (auth401 >= 3) { console.log("Multiple 401s — token expired. Get a fresh token, replace it on the TOKEN line, paste again."); break; } await sleep(400); continue; }
       if (!res.ok) { console.log(`[${i}/${terms.length}] ${kind}:${term} -> HTTP ${res.status}`); await sleep(400); continue; }
       const body = await res.json();
       let ps = []; try { ps = body.mongodb_query.data[0].hybrid_response || []; } catch (e) {}
@@ -51,7 +54,7 @@
     await sleep(450);
   }
   const rows = [...seen.values()];
-  if (!rows.length) { console.log("No providers collected (check token / that you're on optum.com)."); return; }
+  if (!rows.length) { console.log("No providers collected (check token)."); return; }
   const cols = Object.keys(rows[0]);
   const esc = v => { v = (v == null) ? "" : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
   const csv = [cols.join(",")].concat(rows.map(r => cols.map(c => esc(r[c])).join(","))).join("\r\n");
