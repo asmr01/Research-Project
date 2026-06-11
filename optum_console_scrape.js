@@ -8,9 +8,12 @@
    STEP 4: wait ~2-3 min -> optum_directory_ny.csv downloads -> upload it.
 */
 (async () => {
-  let TOKEN = (prompt("Paste ONLY the Bearer token (the long eyJ... value). Not the whole cURL.") || "").trim();
-  TOKEN = TOKEN.replace(/^Bearer\s+/i, "").trim();
-  if (!TOKEN.startsWith("eyJ")) { console.log("No valid token. Paste ONLY the eyJ... value (it should start with 'eyJ')."); return; }
+  let TOKEN = (prompt("Paste the Bearer token (eyJ...). Pasting the whole cURL is fine — I'll extract it.") || "");
+  // pull eyJ....  out of whatever was pasted, then keep only valid JWT chars (drops spaces/newlines/^/quotes)
+  let m = TOKEN.match(/eyJ[A-Za-z0-9._-]+/g);
+  TOKEN = m ? m.sort((a, b) => b.length - a.length)[0] : TOKEN.replace(/[^A-Za-z0-9._-]/g, "");
+  if (!TOKEN.startsWith("eyJ") || (TOKEN.split(".").length !== 3)) { console.log("Could not find a valid token. Copy the value after 'authorization: Bearer ' (starts with eyJ, has two dots) and try again."); return; }
+  console.log("token ok:", TOKEN.slice(0, 16) + "... (" + TOKEN.length + " chars)");
   const API = "https://api.uhg.com/api/cross-domain/producer/ups-provider-search-api/3.0.0/";
   const CDO = ["13599", "13600", "13601"];
   const SPEC = ["primary care","family medicine","internal medicine","pediatrics","geriatric medicine","nurse practitioner","physician assistant","hospitalist","urgent care","cardiology","cardiovascular disease","interventional cardiology","electrophysiology","nuclear cardiology","pediatric cardiology","heart failure","oncology","hematology","hematology oncology","medical oncology","radiation oncology","surgical oncology","gynecologic oncology","gastroenterology","endocrinology","nephrology","rheumatology","pulmonary","pulmonology","infectious disease","allergy immunology","sleep medicine","dermatology","neurology","physical medicine rehabilitation","pain management","anesthesiology","obstetrics gynecology","maternal fetal medicine","midwife","urology","orthopaedic surgery","orthopedics","sports medicine","podiatry","neurosurgery","general surgery","vascular surgery","plastic surgery","colorectal surgery","otolaryngology","ent","ophthalmology","optometry","audiology","radiology","interventional radiology","pathology","emergency medicine","psychiatry","psychology","behavioral health","social work","counselor","physical therapy","occupational therapy","speech language pathology","dietitian","nutrition","pharmacy","pharmacist","chiropractic","acupuncture","dentist","dental","oral surgery","orthodontics","periodontics","prosthodontics","wound care","palliative","registered nurse","clinical nurse specialist"];
