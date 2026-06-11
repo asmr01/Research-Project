@@ -7,6 +7,7 @@ from openpyxl.utils import get_column_letter
 UP = "/root/.claude/uploads/87f376ba-3f62-5e40-825b-88b9f5b8ff90/"
 DIR_CSV = UP + "825fafb9-optum_directory_ny_1.csv"        # Optum directory full roster (CareMount+ProHEALTH)
 NPPES_CSV = UP + "c21cdcfb-optum_ny_providers.csv"         # NPPES (for Crystal Run)
+LOOKUP_CSV = UP + "3d1017ff-nppes_lookup.csv"             # NPPES by-NPI lookup (tenure, secondary specialties)
 OUT = "/home/user/Research-Project/Optum_NY_All_Providers.xlsx"
 
 # --- directory: name-based specialty group + credential-based provider type ---
@@ -50,7 +51,8 @@ for _city,_cty in {"pomona":"Rockland","hewlett":"Nassau","north merrick":"Nassa
     enrich.CITY_COUNTY.setdefault(_city,_cty)
 
 COLS = ["npi","display_name","first_name","last_name","gender","provider_type","specialty",
-        "specialty_group","accepting_new_patients","employed_or_contract","average_rating",
+        "specialty_group","secondary_specialties","enumeration_date","years_since_npi",
+        "accepting_new_patients","employed_or_contract","average_rating",
         "review_count","languages","cdo","region","county","city","zip","address","phone",
         "primary_location_name","num_locations","website_url","schedule_url","source"]
 
@@ -91,6 +93,22 @@ for r in csv.DictReader(open(NPPES_CSV, encoding="utf-8-sig")):
         "source":"NPPES (Crystal Run)"}
     cr_added+=1
 
+# 3) attach NPPES by-NPI lookup (tenure, sex fill, secondary specialties)
+lk = {r["npi"].strip(): r for r in csv.DictReader(open(LOOKUP_CSV, encoding="utf-8-sig"))}
+matched = 0
+for npi, row in merged.items():
+    L = lk.get(npi)
+    if L:
+        matched += 1
+        row["enumeration_date"] = L["enumeration_date"]
+        y = L["enumeration_date"][-4:]
+        row["years_since_npi"] = (2026 - int(y)) if y.isdigit() else ""
+        row["secondary_specialties"] = "; ".join(enrich.SPEC.get(c, c) for c in L["secondary_taxonomies"].split(";") if c)
+        if not row.get("gender"):
+            row["gender"] = {"M": "Male", "F": "Female"}.get(L["sex"], "")
+    else:
+        row["enumeration_date"] = ""; row["years_since_npi"] = ""; row["secondary_specialties"] = ""
+
 # --- write flat workbook (no pivots) ---
 wb=Workbook(); ws=wb.active; ws.title="Providers"
 ws.append(COLS)
@@ -111,3 +129,6 @@ print("county:",dict(collections.Counter(v["county"] for v in merged.values())))
 print("unmapped county:",{(v["city"],v["zip"]) for v in merged.values() if not v["county"]})
 print("Cardiology:",sum(v["specialty_group"]=="Cardiology" for v in merged.values()),
       "| Oncology:",sum(v["specialty_group"]=="Oncology" for v in merged.values()))
+print("NPPES lookup matched:",matched,"| with secondary specialties:",
+      sum(1 for v in merged.values() if v["secondary_specialties"]),
+      "| gender filled:",sum(1 for v in merged.values() if v["gender"]))
