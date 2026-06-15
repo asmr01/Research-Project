@@ -40,6 +40,57 @@ def cred_ptype(name, specialty):
     if "physical therapist" in sl: return "Therapy & Rehab"
     if any(k in sl for k in ["audiolog","optometr","nutrition"]): return "Other Clinical"
     return "Physician (MD/DO)"
+# crosswalk primary_specialty -> the user's external comparison taxonomy (22 buckets)
+TARGET = {
+ "Allergy & Immunology":"Allergy",
+ "Psychology":"Behavioral","Psychiatry":"Behavioral","Social Work":"Behavioral","Counseling":"Behavioral",
+ "Cardiology":"Cardiology","Endocrinology":"Endocrinology","Otolaryngology (ENT)":"ENT",
+ "Gastroenterology":"Gastroenterology","Hospital Medicine":"Hospitalist",
+ "Internal Medicine":"IMFM","Family Medicine":"IMFM","Geriatric Medicine":"IMFM","Primary Care (General)":"IMFM",
+ "Infectious Disease":"Infectious Disease","Obstetrics & Gynecology":"OBGYN","Midwifery":"OBGYN",
+ "Hematology & Oncology":"Oncology/Radiation Oncology","Surgical Oncology":"Oncology/Radiation Oncology",
+ "Ophthalmology":"Ophthalmology","Optometry":"Ophthalmology",
+ "Orthopaedic Surgery":"Orthopedics","Sports Medicine":"Orthopedics",
+ "Pain Medicine":"Pain Management","Pediatrics":"Pediatrics",
+ "Physical Medicine & Rehab":"Physical Medicine and Rehab","Podiatry":"Podiatry",
+ "Radiology":"Radiology","Rheumatology":"Rheumatology",
+ "General Surgery":"Surgery","Vascular Surgery":"Surgery","Colon & Rectal Surgery":"Surgery",
+ "Plastic Surgery":"Surgery","Neurosurgery":"Surgery","Urology":"Urology",
+}
+def _loc_to_target(name):
+    """Optum clinics are named by specialty ('Optum Cardiology - ...'); use that to
+    place generic PA/NP rows and catch urgent care."""
+    n = (name or "").lower()
+    if "urgent care" in n: return "Urgent Care"
+    if "primary care" in n or "internal medicine" in n or "family medicine" in n: return "IMFM"
+    if any(k in n for k in ["obgyn","ob/gyn","ob gyn","obstetric","gynecolog","midwif","women's health","womens health"]): return "OBGYN"
+    if "orthop" in n or "sports medicine" in n: return "Orthopedics"
+    if "cardio" in n: return "Cardiology"
+    if "gastro" in n: return "Gastroenterology"
+    if "endocrin" in n: return "Endocrinology"
+    if "urology" in n and "neuro" not in n: return "Urology"
+    if "otolaryng" in n: return "ENT"
+    if "ophthalm" in n: return "Ophthalmology"
+    if "rheumat" in n: return "Rheumatology"
+    if "pain" in n: return "Pain Management"
+    if "podiatr" in n: return "Podiatry"
+    if "oncology" in n or "hematology" in n or "cancer" in n: return "Oncology/Radiation Oncology"
+    if "infectious" in n: return "Infectious Disease"
+    if "allergy" in n: return "Allergy"
+    if "physical medicine" in n: return "Physical Medicine and Rehab"
+    if any(k in n for k in ["behavioral","psychiatry","psycholog","mental health"]): return "Behavioral"
+    if "pediatric" in n: return "Pediatrics"
+    if "hospitalist" in n: return "Hospitalist"
+    if "surgery" in n or "surgical" in n: return "Surgery"
+    return None
+
+def target_specialty(prim, location_name):
+    if "urgent care" in (location_name or "").lower(): return "Urgent Care"
+    base = TARGET.get(prim)
+    if base: return base
+    return _loc_to_target(location_name) or "Other / no target"
+
+
 def parse_city(addr):
     parts=[p.strip() for p in addr.split(",")]
     return parts[-2] if len(parts)>=2 else ""
@@ -124,7 +175,7 @@ for _city,_cty in {"pomona":"Rockland","hewlett":"Nassau","north merrick":"Nassa
     enrich.CITY_COUNTY.setdefault(_city,_cty)
 
 COLS = ["npi","full_name","display_name","first_name","last_name","gender","provider_type",
-        "primary_specialty","specialty","specialty_group","secondary_specialties",
+        "target_specialty","primary_specialty","specialty","specialty_group","secondary_specialties",
         "enumeration_date","years_since_npi",
         "accepting_new_patients","employed_or_contract","average_rating",
         "review_count","languages","cdo","region","county","city","zip","address","phone",
@@ -183,9 +234,10 @@ for npi, row in merged.items():
     else:
         row["enumeration_date"] = ""; row["years_since_npi"] = ""; row["secondary_specialties"] = ""
 
-# 4) clean specialty rollup + conjoined name
+# 4) clean specialty rollup + external-taxonomy crosswalk + conjoined name
 for row in merged.values():
     row["primary_specialty"] = primary_specialty(row["specialty"])
+    row["target_specialty"] = target_specialty(row["primary_specialty"], row["primary_location_name"])
     row["full_name"] = (row["first_name"].strip() + " " + row["last_name"].strip()).strip()
 
 # --- write flat workbook (no pivots) ---
