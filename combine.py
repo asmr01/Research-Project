@@ -235,7 +235,9 @@ for npi, row in merged.items():
         row["enumeration_date"] = ""; row["years_since_npi"] = ""; row["secondary_specialties"] = ""
 
 # 4) clean specialty rollup + external-taxonomy crosswalk + conjoined name
+BOROUGH_TO_COUNTY = {"Manhattan":"New York","Brooklyn":"Kings","Staten Island":"Richmond"}
 for row in merged.values():
+    row["county"] = BOROUGH_TO_COUNTY.get(row["county"], row["county"])
     row["primary_specialty"] = primary_specialty(row["specialty"])
     row["target_specialty"] = target_specialty(row["primary_specialty"], row["primary_location_name"])
     row["full_name"] = (row["first_name"].strip() + " " + row["last_name"].strip()).strip()
