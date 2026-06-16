@@ -7,10 +7,15 @@ SRC="/home/user/Research-Project/Optum_NY_All_Providers.xlsx"
 OUT="/home/user/Research-Project/Optum_NY_Comparison.xlsx"
 
 P=load_workbook(SRC)["Providers"]; h=[c.value for c in P[1]]
-ci=h.index("county"); pti=h.index("provider_type")
+ci=h.index("county"); pti=h.index("provider_type"); tsi=h.index("target_specialty")
 rows=list(P.iter_rows(min_row=2,values_only=True))
-OUR=collections.Counter((r[pti],r[ci]) for r in rows)
+# Merge Podiatrist (DPM) into Physician (MD/DO) for parity with Prism's MD/APC flag
+MERGE={"Podiatrist (DPM)":"Physician (MD/DO)"}
+def pt_of(r): return MERGE.get(r[pti], r[pti])
+OUR=collections.Counter((pt_of(r),r[ci]) for r in rows)
 our_cty=collections.Counter(r[ci] for r in rows)
+# our physician specialties by county (physicians only, for the specialty comparison)
+OUR_PHYS_SPEC=collections.Counter((r[tsi],r[ci]) for r in rows if pt_of(r)=="Physician (MD/DO)")
 
 PRISM={("Bronx","Physician (MD/DO)"):1,("Bronx","Nurse Practitioner"):1,("Bronx","Physician Assistant"):1,
  ("Kings","Physician (MD/DO)"):6,
@@ -22,9 +27,9 @@ PRISM={("Bronx","Physician (MD/DO)"):1,("Bronx","Nurse Practitioner"):1,("Bronx"
  ("Westchester","Physician (MD/DO)"):27,("Westchester","Nurse Practitioner"):3,("Westchester","Physician Assistant"):3,("Westchester","Therapy & Rehab"):1,("Westchester","APC (unspecified)"):4}
 prism_counties={c for (c,p) in PRISM}
 
-MD="Physician (MD/DO)"
+MD="Physician (MD/DO)"   # now includes DPM podiatrists (merged for Prism parity)
 APC_SUB=["Nurse Practitioner","Physician Assistant","Therapy & Rehab","Other Clinical",
-         "Podiatrist (DPM)","Behavioral Health (non-MD)","Other / Non-clinical","Dentist"]
+         "Behavioral Health (non-MD)","Other / Non-clinical","Dentist"]
 DISPLAY={"New York":"New York (Manhattan)","Kings":"Kings (Brooklyn)","Richmond":"Richmond (Staten Island)"}
 def disp(c): return DISPLAY.get(c,c)
 prism_sorted=sorted(prism_counties,key=lambda c:-our_cty[c])
@@ -173,7 +178,56 @@ for row in rs.iter_rows(min_row=2):
     for cell in row: cell.border=BORD
     row[-1].fill=RED; row[-1].font=bold
 
+# ===== Specialty comparison (PHYSICIANS only; Prism downstate counties) =====
+PRISM_SPEC={
+ ("Bronx","Urgent Care"):1,
+ ("Kings","Cardiology"):2,("Kings","Radiology"):4,
+ ("Nassau","Allergy"):3,("Nassau","Surgery"):7,("Nassau","ENT"):1,("Nassau","Hospitalist"):7,("Nassau","IMFM"):1,
+ ("Nassau","Oncology/Radiation Oncology"):6,("Nassau","Orthopedics"):6,("Nassau","Pediatrics"):13,("Nassau","Physical Medicine and Rehab"):1,
+ ("New York","Allergy"):1,("New York","Cardiology"):2,("New York","Endocrinology"):1,("New York","IMFM"):10,("New York","Gastroenterology"):2,
+ ("New York","Ophthalmology"):1,("New York","Pediatrics"):2,("New York","Physical Medicine and Rehab"):1,("New York","Podiatry"):1,
+ ("New York","Rheumatology"):1,("New York","Urgent Care"):2,
+ ("Queens","Radiology"):1,("Queens","IMFM"):2,("Queens","Urgent Care"):3,
+ ("Suffolk","Allergy"):2,("Suffolk","IMFM"):2,("Suffolk","OBGYN"):3,("Suffolk","Orthopedics"):1,
+ ("Westchester","Pain Management"):1,("Westchester","Surgery"):1,("Westchester","Orthopedics"):7,("Westchester","Urology"):4}
+PRISM_MD_TOT={"Bronx":1,"Kings":6,"Nassau":70,"New York":28,"Queens":10,"Rockland":3,"Suffolk":13,"Westchester":27}
+TARGETS=["Allergy","Behavioral","Cardiology","Endocrinology","ENT","Gastroenterology","Hospitalist","IMFM",
+         "Infectious Disease","OBGYN","Oncology/Radiation Oncology","Ophthalmology","Orthopedics","Pain Management",
+         "Pediatrics","Physical Medicine and Rehab","Podiatry","Radiology","Rheumatology","Surgery","Urgent Care","Urology"]
+# Prism unspecified per county = MD total - named
+for c in PRISM_MD_TOT:
+    named=sum(v for (cc,s),v in PRISM_SPEC.items() if cc==c)
+    PRISM_SPEC[(c,"Unspecified (Prism MD)")]=PRISM_MD_TOT[c]-named
+
+sx=wb.create_sheet("Specialty x County (Phys)")
+sx["A1"]="Optum NY — PHYSICIAN specialties × county:  Prism / our roster (physicians only)"; sx["A1"].font=Font(bold=True,size=12,color="1F4E78")
+sx["A2"]=("Physicians only (Prism has no specialty for APCs). 'Unspecified (Prism MD)' = Prism MDs with no title/per-diem. "
+          "PINK=overlap, RED=Prism>ours. Specialty = your 22-cat taxonomy.")
+sx["A2"].font=Font(italic=True,color="C0006C")
+SROWS=TARGETS+["Unspecified (Prism MD)"]
+r0=4; sx.cell(r0,1,"Specialty \\ County").font=bold
+for j,c in enumerate(prism_sorted,2):
+    cc=sx.cell(r0,j,disp(c)); cc.font=bold; cc.fill=HDR; cc.alignment=ctr; cc.border=BORD
+sx.cell(r0,len(prism_sorted)+2,"Prism / Ours (downstate)").font=bold; sx.cell(r0,len(prism_sorted)+2).fill=HDR; sx.cell(r0,len(prism_sorted)+2).alignment=ctr; sx.cell(r0,len(prism_sorted)+2).border=BORD
+for i,sp in enumerate(SROWS,r0+1):
+    sx.cell(i,1,sp).font=bold; sx.cell(i,1).border=BORD
+    ot=pt_=0
+    for j,c in enumerate(prism_sorted,2):
+        o=OUR_PHYS_SPEC.get((sp,c),0) if sp!="Unspecified (Prism MD)" else 0
+        pr=PRISM_SPEC.get((c,sp),0); ot+=o; pt_+=pr
+        cell=sx.cell(i,j); cell.alignment=ctr; cell.border=BORD
+        if o==0 and pr==0: cell.value=""; cell.fill=GREY
+        else:
+            cell.value=f"{pr} / {o}"
+            cell.fill=YEL if sp=="Unspecified (Prism MD)" else (RED if pr>o else PINK)
+    e=sx.cell(i,len(prism_sorted)+2,f"{pt_} / {ot}"); e.font=bold; e.fill=TOT; e.alignment=ctr; e.border=BORD
+sx.column_dimensions["A"].width=28
+for j in range(2,len(prism_sorted)+3): sx.column_dimensions[get_column_letter(j)].width=12
+sx.freeze_panes="B5"
+
 wb.save(OUT)
 print("Saved",OUT)
 print("Prism counties:",prism_sorted)
 print("Greyed (not in Prism):",nonprism_sorted)
+print("Our MDs (incl DPM):",sum(v for (p,c),v in OUR.items() if p==MD))
+print("Prism spec named+unspec total:",sum(PRISM_SPEC.values()))
