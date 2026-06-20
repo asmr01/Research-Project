@@ -13,3 +13,4 @@ endpoint_pfile_*
 # Python
 __pycache__/
 *.pyc
+*.pptx
