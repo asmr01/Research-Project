@@ -1,0 +1,64 @@
+/*
+ * MSHS Presentation Design System — CSS custom properties
+ * Mirror of tokens.json for building HTML/web renderings of the deck system.
+ * Colors derived from the MSHS template theme + the reference deck's working palette.
+ */
+
+:root {
+  /* ---- Brand ---- */
+  --c-cyan:        #00AEEF;  /* primary accent: eyebrows, dividers */
+  --c-indigo:      #221F72;  /* headlines, titles */
+  --c-magenta:     #D80B8C;  /* sparing single call-out */
+  --c-light-blue:  #7FD6F7;
+  --c-violet:      #908FB8;  /* page numbers, quiet meta */
+  --c-light-pink:  #EB85C5;
+
+  /* ---- Neutrals ---- */
+  --c-black:       #000000;
+  --c-white:       #FFFFFF;
+  --c-gray:        #666666;
+  --c-light-gray:  #CCCCCC;
+
+  /* ---- Working palette (what the reference deck actually uses) ---- */
+  --c-action-blue:   #0C7CB2;  /* source links, filled pills */
+  --c-deep-navy:     #002060;  /* step numerals */
+  --c-gradient-blue: #0067A8;  /* cover gradient */
+  --c-ink-strong:    #44515B;  /* body copy */
+  --c-ink-muted:     #5B6B78;  /* lead-in, captions */
+  --c-surface:       #EEF2F5;  /* card / panel fill */
+  --c-hairline:      #D7DEE3;  /* borders, neutral pills */
+
+  /* ---- Type scale (pt equivalents; use rem in web) ---- */
+  --font: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --t-cover-title:   48pt;
+  --t-cover-sub:     20pt;
+  --t-eyebrow:       11pt;
+  --t-headline:      20pt;
+  --t-card-title:    16pt;
+  --t-lead-in:       12.5pt;
+  --t-body:          14pt;
+  --t-pill:          9.5pt;
+  --t-step:          18pt;
+  --t-sources:       8pt;
+  --t-page-num:      10pt;
+
+  /* ---- Layout (16:9, 13.333in x 7.5in) ---- */
+  --margin-x:        0.6in;
+  --content-w:       12.13in;
+  --divider-h:       0.03in;
+  --card-radius:     0.08in;
+}
+
+/* Semantic helpers */
+.eyebrow { font: bold var(--t-eyebrow)/1.2 var(--font); color: var(--c-cyan); text-transform: uppercase; letter-spacing: .08em; }
+.headline { font: var(--t-headline)/1.25 var(--font); color: var(--c-indigo); }
+.divider-rule { height: var(--divider-h); background: var(--c-cyan); border: 0; }
+.card { background: var(--c-surface); border: 1px solid var(--c-hairline); border-radius: var(--card-radius); }
+.card-title { font: bold var(--t-card-title)/1.2 var(--font); color: var(--c-indigo); }
+.body { font: var(--t-body)/1.35 var(--font); color: var(--c-ink-strong); }
+.pill { font: bold var(--t-pill)/1 var(--font); border-radius: 999px; padding: .25em .7em; }
+.pill--strong { background: var(--c-action-blue); color: var(--c-white); }
+.pill--neutral { background: var(--c-hairline); color: var(--c-ink-strong); }
+.sources { font: var(--t-sources)/1.3 var(--font); color: var(--c-ink-muted); }
+.sources a { color: var(--c-action-blue); }
+.page-number { font: var(--t-page-num)/1 var(--font); color: var(--c-violet); }
