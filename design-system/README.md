@@ -25,6 +25,15 @@ on-voice deck** without seeing the original files.
 | [`content-voice.md`](./content-voice.md) | The writing system — 12 rules for language that lands |
 | [`tokens.json`](./tokens.json) | Machine-readable colors, type scale, layout metrics |
 | [`tokens.css`](./tokens.css) | The same tokens as CSS custom properties for web/HTML renders |
+| [`components/`](./components/) | Per-component `@dsCard` HTML previews for Claude Design `/design-sync` |
+
+## Syncing into Claude Design
+
+This package is shaped for Claude Design's `/design-sync`: [`tokens.json`](./tokens.json) plus one
+`@dsCard`-annotated preview per component under [`components/`](./components/). From a Claude Code
+session that has Claude Design authorization (a local terminal, or a "Send to Claude Code Web"
+workspace), run `/design-sync` from this folder to push the tokens and component cards into a
+Claude Design project. See [`components/README.md`](./components/README.md).
 
 ## The system in one screen
 

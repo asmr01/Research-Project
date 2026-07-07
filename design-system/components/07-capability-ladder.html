@@ -1,0 +1,50 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Capability ladder</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:600px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .ladder{display:flex;flex-direction:column;gap:6px;}
+  .rung{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;
+        padding:11px 14px;border-radius:9px;background:var(--surface);}
+  .rung:nth-child(even){background:color-mix(in srgb,var(--hairline) 45%,transparent);}
+  .num{font-size:18px;font-weight:700;color:var(--navy);}
+  @media (prefers-color-scheme:dark){.num{color:var(--cyan);}}
+  :root[data-theme="dark"] .num{color:var(--cyan);}
+  .t{font-size:14px;color:var(--headline);font-weight:700;}
+  .t small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:1px;}
+  .pill{display:inline-flex;font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:999px;}
+  .strong{background:var(--action);color:#fff;}
+  .neutral{background:var(--hairline);color:var(--ink);}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Capability ladder</p>
+<div class="ladder">
+  <div class="rung"><span class="num">1</span><span class="t">Administers commercial product<small>Delivers sponsor-made therapy. No manufacturing.</small></span><span class="pill neutral">Delivery only</span></div>
+  <div class="rung"><span class="num">2</span><span class="t">In-house GMP for clinical trials<small>Makes investigational cell/vector products.</small></span><span class="pill strong">Manufacturer</span></div>
+  <div class="rung"><span class="num">3</span><span class="t">Viral-vector manufacturing<small>Produces AAV / lentivirus — the upstream enabler.</small></span><span class="pill strong">Manufacturer</span></div>
+  <div class="rung"><span class="num">4</span><span class="t">Point-of-care / rapid in-house<small>Makes product on-site in ~6 days.</small></span><span class="pill strong">Frontier</span></div>
+  <div class="rung"><span class="num">5</span><span class="t">Commercial co-manufacturing<small>Rare; e.g. Penn–Novartis on Kymriah.</small></span><span class="pill neutral">Rare</span></div>
+</div>
+</div>

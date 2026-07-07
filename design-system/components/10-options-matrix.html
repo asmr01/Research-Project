@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Options matrix</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:620px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .opt{border:1px solid var(--hairline);border-radius:12px;background:var(--surface2);padding:18px 20px;}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+       color:#fff;background:var(--action);border-radius:999px;padding:4px 11px;}
+  .v{font-size:17px;font-weight:700;color:var(--headline);margin:10px 0 4px;}
+  .d{font-size:13px;color:var(--ink);margin:0;line-height:1.4;}
+  .dil{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.4;}
+  .dil b{color:var(--headline);}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Options / recommendation matrix</p>
+<div class="grid">
+  <div class="opt"><span class="tag">Option A</span><p class="v">Hold</p><p class="d">Stay delivery-only; revisit as economics and point-of-care mature.</p><p class="dil"><b>Diligence — Validate:</b> Cost of inaction vs. competitive risk; partner availability later.</p></div>
+  <div class="opt"><span class="tag">Option B</span><p class="v">Buy / access</p><p class="d">Contract-manufacturing access or license a point-of-care platform.</p><p class="dil"><b>Diligence — Validate:</b> Vendor terms, platform fit, speed-to-stand-up.</p></div>
+  <div class="opt"><span class="tag">Option C</span><p class="v">Build</p><p class="d">Stand up MSHS in-house GMP for cells and/or vectors.</p><p class="dil"><b>Diligence — Validate:</b> Capex &amp; site, demand model, talent plan, regulatory path.</p></div>
+  <div class="opt"><span class="tag">Option D</span><p class="v">Partner</p><p class="d">Deepen the Empire State Consortium or add co-development / JV.</p><p class="dil"><b>Diligence — Validate:</b> Partner fit, governance, IP / economics split, capacity share.</p></div>
+</div>
+</div>

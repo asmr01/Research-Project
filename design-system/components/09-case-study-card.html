@@ -1,0 +1,47 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Case-study card</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:560px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .card{border:1px solid var(--hairline);border-radius:12px;background:var(--surface2);padding:22px 24px;}
+  .ch{font-size:17px;font-weight:700;color:var(--headline);}
+  .cmeta{font-size:11.5px;color:var(--muted);letter-spacing:.02em;margin:2px 0 12px;}
+  dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;}
+  dt{font-size:11px;font-weight:700;color:var(--action);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  dd{margin:0;font-size:13px;color:var(--ink);line-height:1.4;}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Case-study card</p>
+<div class="card">
+  <div class="ch">Penn Medicine</div>
+  <div class="cmeta">Center for Cellular Immunotherapies · CVPF · Philadelphia, PA · AMC · NCI-Comprehensive</div>
+  <dl>
+    <dt>History</dt><dd>2008 CVPF FACT-accredited; 2017 Penn–Novartis Kymriah, the first FDA-approved CAR-T.</dd>
+    <dt>People</dt><dd>Carl June, MD; Bruce Levine, PhD; ~9 oversight faculty.</dd>
+    <dt>Facility</dt><dd>3 GMP suites; cells + vector transduction; gene editing; release testing.</dd>
+    <dt>Results</dt><dd>Spinouts Tmunity (→Kite), Carisma, Capstan (→AbbVie ~$2.1B); dozens of INDs.</dd>
+  </dl>
+</div>
+</div>

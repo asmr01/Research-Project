@@ -1,0 +1,47 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Status pills</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:520px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .box{border:1px solid var(--hairline);border-radius:12px;background:var(--surface2);padding:22px 24px;}
+  .pillrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .pill{display:inline-flex;align-items:center;font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;}
+  .strong{background:var(--action);color:#fff;}
+  .neutral{background:var(--hairline);color:var(--ink);}
+  .note{font-size:13px;color:var(--muted);margin:0;}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Status pills</p>
+<div class="box">
+  <div class="pillrow">
+    <span class="pill strong">Manufacturer</span>
+    <span class="pill strong">Frontier</span>
+    <span class="pill neutral">Delivery only</span>
+    <span class="pill neutral">Via consortium</span>
+    <span class="pill neutral">Rare</span>
+  </div>
+  <p class="note">Filled blue = strong capability. Grey = neutral or absent. Pills classify — they never carry a sentence.</p>
+</div>
+</div>

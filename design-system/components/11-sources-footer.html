@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Sources footer</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:600px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .box{border:1px solid var(--hairline);border-radius:12px;background:var(--slide);padding:22px 24px;box-shadow:var(--shadow);}
+  .foot{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--hairline);padding-top:12px;}
+  .src{font-size:11.5px;color:var(--muted);max-width:80%;line-height:1.5;}
+  .src a{color:var(--action);text-decoration:none;}
+  .num{font-size:13px;color:var(--violet);font-weight:700;}
+  .note{font-size:12.5px;color:var(--muted);margin:0 0 14px;}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Sources footer + page number</p>
+<div class="box">
+  <p class="note">Every fact-bearing slide carries a sources line; the deck closes with full URLs.</p>
+  <div class="foot">
+    <div class="src">Sources: <a href="#">PharmExec — CGT commercialization</a> · <a href="#">Vizient — operationalizing the next era</a> · <a href="#">Cincinnati Children's</a></div>
+    <div class="num">13</div>
+  </div>
+</div>
+</div>
