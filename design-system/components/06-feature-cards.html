@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Feature cards</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:600px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .card{border:1px solid var(--hairline);border-radius:10px;background:var(--surface2);padding:16px 18px;}
+  .t{font-size:16px;font-weight:700;color:var(--headline);margin:0;}
+  .b{font-size:13.5px;color:var(--ink);margin:6px 0 0;line-height:1.4;}
+
+</style>
+<div class="stage">
+<p class="cap">Components · Feature / benefit cards</p>
+<div class="grid">
+  <div class="card"><p class="t">Speed to patient</p><p class="b">Point-of-care manufacturing compresses vein-to-vein time from weeks to days.</p></div>
+  <div class="card"><p class="t">Influence over trials</p><p class="b">Manufacturing earns a seat at the table shaping trial design and commercialization.</p></div>
+  <div class="card"><p class="t">New economics &amp; IP</p><p class="b">Revenue beyond clinical margin: CDMO capacity, vectors-as-a-service, equity in spinouts.</p></div>
+  <div class="card"><p class="t">Supply resilience</p><p class="b">In-house vector and cell capability reduces dependence on constrained supply chains.</p></div>
+</div>
+</div>

@@ -1,0 +1,51 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Type scale</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:640px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .scale{display:grid;border:1px solid var(--hairline);border-radius:12px;overflow:hidden;}
+  .row{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:baseline;
+       padding:15px 18px;border-bottom:1px solid var(--hairline);background:var(--surface2);}
+  .row:last-child{border-bottom:0;}
+  .lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
+  .lab span{display:block;color:var(--action);margin-top:3px;letter-spacing:0;text-transform:none;font-weight:400;}
+  .cover{font-size:34px;font-weight:700;color:var(--headline);line-height:1;letter-spacing:-.01em;}
+  .head{font-size:22px;color:var(--headline);line-height:1.2;}
+  .card{font-size:17px;font-weight:700;color:var(--headline);}
+  .bd{font-size:14px;color:var(--ink);}
+  .eye{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);}
+  .src{font-size:12px;color:var(--muted);}
+
+</style>
+<div class="stage">
+<p class="cap">Foundations · Type — one typeface, Arial</p>
+<div class="scale">
+  <div class="row"><div class="lab">Cover<span>48pt bold</span></div><div class="cover">Cell &amp; Gene Therapy Manufacturing</div></div>
+  <div class="row"><div class="lab">Eyebrow<span>11pt · cyan · upper</span></div><div class="eye">05 · Who manufactures today</div></div>
+  <div class="row"><div class="lab">Headline<span>20pt · indigo</span></div><div class="head">~12 AMCs manufacture CGT today — mostly trial products and vectors</div></div>
+  <div class="row"><div class="lab">Card title<span>16pt bold</span></div><div class="card">Speed to patient</div></div>
+  <div class="row"><div class="lab">Body<span>14pt · ink</span></div><div class="bd">Point-of-care manufacturing compresses vein-to-vein time from weeks to days.</div></div>
+  <div class="row"><div class="lab">Sources<span>8pt · action / muted</span></div><div class="src">Sources: Penn CVPF · CHOP Clinical Vector Core · Vizient</div></div>
+</div>
+</div>

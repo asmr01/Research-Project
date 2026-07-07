@@ -1,0 +1,443 @@
+<title>MSHS Presentation Design System</title>
+<style>
+  :root {
+    --font: Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+    /* Brand + working palette (light) */
+    --indigo:   #221F72;
+    --cyan:     #00AEEF;
+    --magenta:  #D80B8C;
+    --violet:   #908FB8;
+    --action:   #0C7CB2;
+    --navy:     #002060;
+
+    --ground:   #FFFFFF;
+    --surface:  #EEF2F5;
+    --surface-2:#F6F8FA;
+    --hairline: #D7DEE3;
+    --ink:      #44515B;
+    --muted:    #5B6B78;
+    --headline: #221F72;
+    --on-accent:#FFFFFF;
+
+    --slide-bg: #FFFFFF;
+    --shadow: 0 1px 2px rgba(34,31,114,.06), 0 12px 34px rgba(34,31,114,.10);
+    --maxw: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:   #12141C;
+      --surface:  #1B1E2B;
+      --surface-2:#20233230;
+      --hairline: #2E3450;
+      --ink:      #C4CBD6;
+      --muted:    #8C97A6;
+      --headline: #ABA8F2;
+      --cyan:     #29BEF5;
+      --action:   #4FB0E8;
+      --violet:   #9E9DCB;
+      --slide-bg: #191C28;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#FFFFFF; --surface:#EEF2F5; --surface-2:#F6F8FA; --hairline:#D7DEE3;
+    --ink:#44515B; --muted:#5B6B78; --headline:#221F72; --cyan:#00AEEF; --action:#0C7CB2;
+    --violet:#908FB8; --slide-bg:#FFFFFF;
+    --shadow: 0 1px 2px rgba(34,31,114,.06), 0 12px 34px rgba(34,31,114,.10);
+  }
+  :root[data-theme="dark"] {
+    --ground:#12141C; --surface:#1B1E2B; --surface-2:#202332; --hairline:#2E3450;
+    --ink:#C4CBD6; --muted:#8C97A6; --headline:#ABA8F2; --cyan:#29BEF5; --action:#4FB0E8;
+    --violet:#9E9DCB; --slide-bg:#191C28;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; font-family: var(--font); background: var(--ground); color: var(--ink);
+    line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- eyebrow / headings ---------- */
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--cyan); margin: 0;
+  }
+  h2.sec {
+    font-size: clamp(22px, 3.2vw, 30px); color: var(--headline); font-weight: 700;
+    margin: 8px 0 0; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .sec-lead { color: var(--muted); max-width: 62ch; margin: 10px 0 0; font-size: 15px; }
+  .rule { height: 3px; background: var(--cyan); border: 0; border-radius: 2px; }
+
+  /* ---------- masthead ---------- */
+  header.mast {
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(120% 140% at 88% -20%, color-mix(in srgb, var(--cyan) 22%, transparent), transparent 55%),
+      var(--surface);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .mast-inner { padding: 60px 0 52px; position: relative; z-index: 2; }
+  .peaks { position: absolute; inset: 0; z-index: 1; opacity: .10; pointer-events: none;
+           display: flex; justify-content: flex-end; align-items: flex-end; }
+  .peaks svg { width: min(560px, 60%); height: auto; transform: translate(6%, 20%); }
+  .kicker { font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--action); }
+  h1 {
+    font-size: clamp(34px, 6.2vw, 60px); line-height: 1.02; color: var(--headline);
+    margin: 14px 0 0; letter-spacing: -.02em; font-weight: 700; text-wrap: balance; max-width: 15ch;
+  }
+  .mast-sub { font-size: clamp(15px, 2.2vw, 19px); color: var(--ink); margin: 18px 0 0; max-width: 60ch; }
+  .mast-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .chip {
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+    background: var(--ground); border: 1px solid var(--hairline); color: var(--ink);
+  }
+  .chip b { color: var(--indigo); }
+  :root[data-theme="dark"] .chip b, @media (prefers-color-scheme: dark){ .chip b { color: var(--headline);} }
+
+  /* ---------- section rhythm ---------- */
+  section { padding: 54px 0; border-bottom: 1px solid var(--hairline); }
+  .sec-head { margin-bottom: 30px; }
+
+  /* ---------- rendered example slide (hero) ---------- */
+  .slide-frame {
+    aspect-ratio: 16 / 9; background: var(--slide-bg); border: 1px solid var(--hairline);
+    border-radius: 10px; box-shadow: var(--shadow); overflow: hidden;
+    container-type: inline-size;
+    display: grid; grid-template-rows: auto auto auto 1fr auto;
+    padding: 3.4cqw 3.6cqw 2.6cqw;
+  }
+  .s-eyebrow { font-size: 2.2cqw; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan); }
+  .s-head { font-size: 3.9cqw; color: var(--headline); font-weight: 400; margin: .5cqw 0 0; line-height: 1.18; max-width: 92%; }
+  .s-rule { height: .5cqw; background: var(--cyan); margin: 2cqw 0 0; border-radius: 2px; }
+  .s-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw 5cqw; align-content: center; padding: 1cqw .5cqw; }
+  .s-card-t { font-size: 2.7cqw; font-weight: 700; color: var(--headline); margin: 0; }
+  .s-card-b { font-size: 2.15cqw; color: var(--ink); margin: .7cqw 0 0; line-height: 1.35; }
+  .s-foot { display: flex; justify-content: space-between; align-items: flex-end; }
+  .s-src { font-size: 1.45cqw; color: var(--muted); }
+  .s-src a { color: var(--action); text-decoration: none; }
+  .s-num { font-size: 1.9cqw; color: var(--violet); font-weight: 700; }
+  .frame-note { font-size: 13px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .frame-note code { background: var(--surface); padding: 2px 6px; border-radius: 5px; color: var(--action); font-size: 12px; }
+
+  /* ---------- palette ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .sw { border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; background: var(--surface-2); }
+  .sw .chipfill { height: 74px; }
+  .sw .meta { padding: 10px 12px; }
+  .sw .nm { font-size: 13px; font-weight: 700; color: var(--headline); }
+  .sw .hx { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  .sw .role { font-size: 11.5px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+
+  /* ---------- type scale ---------- */
+  .scale { display: grid; gap: 0; border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .row {
+    display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: baseline;
+    padding: 16px 20px; border-bottom: 1px solid var(--hairline); background: var(--surface-2);
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+  .row .lab span { display: block; color: var(--action); margin-top: 3px; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  .t-cover { font-size: 40px; font-weight: 700; color: var(--headline); letter-spacing: -.01em; line-height: 1; }
+  .t-head { font-size: 24px; color: var(--headline); }
+  .t-card { font-size: 18px; font-weight: 700; color: var(--headline); }
+  .t-body { font-size: 15px; color: var(--ink); }
+  .t-eye  { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); }
+  .t-src  { font-size: 12px; color: var(--muted); }
+
+  /* ---------- component gallery ---------- */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .demo {
+    border: 1px solid var(--hairline); border-radius: 12px; background: var(--surface-2);
+    padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .demo > .dtitle { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  .pill { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px; }
+  .pill.strong { background: var(--action); color: #fff; }
+  .pill.neutral { background: var(--hairline); color: var(--ink); }
+  .pillrow { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .ladder { display: flex; flex-direction: column; gap: 6px; }
+  .rung { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 12px;
+          padding: 9px 12px; border-radius: 8px; background: var(--surface); }
+  .rung:nth-child(even){ background: color-mix(in srgb, var(--hairline) 45%, transparent); }
+  .rung .n { font-size: 17px; font-weight: 700; color: var(--navy); }
+  :root[data-theme="dark"] .rung .n, @media (prefers-color-scheme: dark){ .rung .n { color: var(--cyan);} }
+  .rung .t { font-size: 13.5px; color: var(--headline); font-weight: 700; }
+  .rung .t small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 1px; }
+
+  table.deck { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.deck th { text-align: left; background: var(--indigo); color: #fff; font-weight: 700; padding: 7px 10px; font-size: 11px; letter-spacing: .04em; }
+  table.deck td { padding: 7px 10px; border-bottom: 1px solid var(--hairline); color: var(--ink); }
+  table.deck tr.hi td { background: var(--surface); font-weight: 700; color: var(--headline); }
+
+  .case { display: flex; flex-direction: column; gap: 8px; }
+  .case .ch { font-size: 15px; font-weight: 700; color: var(--headline); }
+  .case .cmeta { font-size: 11.5px; color: var(--muted); letter-spacing: .02em; }
+  .case dl { margin: 4px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; }
+  .case dt { font-size: 11px; font-weight: 700; color: var(--action); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+  .case dd { margin: 0; font-size: 12.5px; color: var(--ink); }
+
+  /* ---------- voice do/don't ---------- */
+  .voice { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .vcard { border: 1px solid var(--hairline); border-radius: 12px; padding: 20px; background: var(--surface-2); }
+  .vcard h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .vcard.do h3 { color: var(--action); }
+  .vcard.dont h3 { color: var(--magenta); }
+  .vcard .mark { width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700; }
+  .vcard.do .mark { background: var(--action); }
+  .vcard.dont .mark { background: var(--magenta); }
+  .vlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .vlist li { font-size: 14px; color: var(--ink); padding-left: 16px; position: relative; }
+  .vlist li::before { content: ""; position: absolute; left: 0; top: 8px; width: 6px; height: 6px; border-radius: 999px; }
+  .vcard.do .vlist li::before { background: var(--action); }
+  .vcard.dont .vlist li::before { background: var(--magenta); }
+  .vlist em { color: var(--headline); font-style: normal; font-weight: 700; }
+
+  /* rules list */
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; counter-reset: r; }
+  .rules .r { border: 1px solid var(--hairline); border-radius: 10px; padding: 16px 18px; background: var(--surface-2); }
+  .rules .r::before { counter-increment: r; content: counter(r, decimal-leading-zero); font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: .1em; }
+  .rules .r h4 { margin: 6px 0 4px; font-size: 15px; color: var(--headline); }
+  .rules .r p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  footer { padding: 40px 0 60px; color: var(--muted); font-size: 13px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+  footer b { color: var(--headline); }
+
+  a.tlink { color: var(--action); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--action) 40%, transparent); }
+  a.tlink:hover { border-bottom-color: var(--action); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 3px; }
+
+  @media (max-width: 720px) {
+    .voice { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<header class="mast">
+  <div class="peaks" aria-hidden="true">
+    <svg viewBox="0 0 400 300" fill="none" stroke="var(--indigo)" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M40 300 L150 70 L200 140 L150 70" />
+      <path d="M110 300 L215 45 L320 300" />
+      <path d="M175 300 L270 120 L365 300" />
+    </svg>
+  </div>
+  <div class="wrap mast-inner">
+    <div class="kicker">Design System · Mount Sinai Health System</div>
+    <h1>The MSHS Presentation Design System</h1>
+    <p class="mast-sub">A single system for decks that <b style="color:var(--headline)">look</b> like the MSHS template and <b style="color:var(--headline)">read</b> like the reference deck — clear headline takeaways, precise quantified language, lead with the conclusion and back it with facts.</p>
+    <div class="mast-meta">
+      <span class="chip">Typeface · <b>Arial</b></span>
+      <span class="chip">Accents · <b>Indigo + Cyan</b></span>
+      <span class="chip">Canvas · <b>16:9</b></span>
+      <span class="chip"><b>14</b> components</span>
+      <span class="chip"><b>9</b> slide templates</span>
+      <span class="chip"><b>12</b> voice rules</span>
+    </div>
+  </div>
+</header>
+
+<!-- HERO: a real slide rendered in the system -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The frame in action</p>
+      <h2 class="sec">Every content slide is the same skeleton</h2>
+      <p class="sec-lead">Eyebrow → takeaway headline → cyan rule → content → sources and page number. Below is a live slide built entirely from the tokens in this system.</p>
+    </div>
+
+    <div class="slide-frame" role="img" aria-label="Example slide rendered in the MSHS design system">
+      <div class="s-eyebrow">01 · Why manufacture</div>
+      <h3 class="s-head">AMCs pursue manufacturing for its convergence of research, speed, and economics — and a seat at the table to shape therapies, not just deliver them</h3>
+      <div class="s-rule"></div>
+      <div class="s-grid">
+        <div>
+          <p class="s-card-t">Speed to patient</p>
+          <p class="s-card-b">Point-of-care manufacturing compresses vein-to-vein time from weeks to days.</p>
+        </div>
+        <div>
+          <p class="s-card-t">Influence over trials</p>
+          <p class="s-card-b">Owning production earns a voice in trial design and how products are commercialized.</p>
+        </div>
+        <div>
+          <p class="s-card-t">New economics &amp; IP</p>
+          <p class="s-card-b">Revenue beyond clinical margin: CDMO capacity, vectors-as-a-service, and equity in spinouts.</p>
+        </div>
+        <div>
+          <p class="s-card-t">Talent &amp; prestige</p>
+          <p class="s-card-b">A manufacturing platform anchors a broader CGT Center of Excellence.</p>
+        </div>
+      </div>
+      <div class="s-foot">
+        <div class="s-src">Sources: <a href="#">PharmExec — CGT commercialization</a> · <a href="#">Vizient</a></div>
+        <div class="s-num">4</div>
+      </div>
+    </div>
+    <p class="frame-note">Margins <code>0.6"</code> · eyebrow <code>11pt cyan</code> · takeaway <code>20pt indigo</code> · rule <code>0.03" cyan</code> · body <code>14pt ink</code> · page no. <code>10pt violet</code></p>
+  </div>
+</section>
+
+<!-- PALETTE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Foundations · Color</p>
+      <h2 class="sec">A narrow palette, led by indigo and cyan</h2>
+      <p class="sec-lead">Indigo and cyan carry nearly every slide; ink strong is the body workhorse; magenta is the single call-out, used once per slide at most.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div class="chipfill" style="background:#221F72"></div><div class="meta"><div class="nm">Sinai Indigo</div><div class="hx">#221F72</div><div class="role">Headlines, titles, card titles</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#00AEEF"></div><div class="meta"><div class="nm">Sinai Cyan</div><div class="hx">#00AEEF</div><div class="role">Eyebrows, divider rules, highlights</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#0C7CB2"></div><div class="meta"><div class="nm">Action Blue</div><div class="hx">#0C7CB2</div><div class="role">Source links, filled status pills</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#44515B"></div><div class="meta"><div class="nm">Ink Strong</div><div class="hx">#44515B</div><div class="role">Body copy — never pure black</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#D80B8C"></div><div class="meta"><div class="nm">Sinai Magenta</div><div class="hx">#D80B8C</div><div class="role">One call-out per slide, max</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#908FB8"></div><div class="meta"><div class="nm">Muted Violet</div><div class="hx">#908FB8</div><div class="role">Page numbers, quiet meta</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#EEF2F5"></div><div class="meta"><div class="nm">Surface</div><div class="hx">#EEF2F5</div><div class="role">Card &amp; panel fills</div></div></div>
+      <div class="sw"><div class="chipfill" style="background:#D7DEE3"></div><div class="meta"><div class="nm">Hairline</div><div class="hx">#D7DEE3</div><div class="role">Borders, neutral pills</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TYPE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Foundations · Type</p>
+      <h2 class="sec">One typeface, six working sizes</h2>
+      <p class="sec-lead">Everything is Arial. The takeaway headline stays 20pt even when dense grids shrink the body — the conclusion never gets smaller than its evidence.</p>
+    </div>
+    <div class="scale">
+      <div class="row"><div class="lab">Cover<span>48pt bold</span></div><div class="t-cover">Cell &amp; Gene Therapy Manufacturing</div></div>
+      <div class="row"><div class="lab">Eyebrow<span>11pt · cyan · upper</span></div><div class="t-eye">05 · Who manufactures today</div></div>
+      <div class="row"><div class="lab">Headline<span>20pt · indigo</span></div><div class="t-head">~12 AMCs manufacture CGT today — mostly trial products and vectors</div></div>
+      <div class="row"><div class="lab">Card title<span>16pt bold · indigo</span></div><div class="t-card">Speed to patient</div></div>
+      <div class="row"><div class="lab">Body<span>14pt · ink strong</span></div><div class="t-body">Point-of-care manufacturing compresses vein-to-vein time from weeks to days.</div></div>
+      <div class="row"><div class="lab">Sources<span>8pt · action / muted</span></div><div class="t-src">Sources: Penn CVPF · CHOP Clinical Vector Core · Vizient</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPONENTS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Components</p>
+      <h2 class="sec">Parts that assemble every slide</h2>
+      <p class="sec-lead">Pills classify, ladders rank, tables scan, case-study cards profile. Reach for the part that fits the job — don't invent new frames.</p>
+    </div>
+    <div class="gallery">
+
+      <div class="demo">
+        <div class="dtitle">Status pills</div>
+        <div class="pillrow">
+          <span class="pill strong">Manufacturer</span>
+          <span class="pill strong">Frontier</span>
+          <span class="pill neutral">Delivery only</span>
+          <span class="pill neutral">Via consortium</span>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin:0">Filled blue = strong capability. Grey = neutral or absent. Pills classify; they never carry a sentence.</p>
+      </div>
+
+      <div class="demo">
+        <div class="dtitle">Capability ladder</div>
+        <div class="ladder">
+          <div class="rung"><span class="n">1</span><span class="t">Administers commercial product<small>Delivers sponsor-made therapy</small></span><span class="pill neutral">Delivery only</span></div>
+          <div class="rung"><span class="n">2</span><span class="t">In-house GMP for trials<small>Makes investigational products</small></span><span class="pill strong">Manufacturer</span></div>
+          <div class="rung"><span class="n">3</span><span class="t">Point-of-care / rapid<small>On-site in ~6 days</small></span><span class="pill strong">Frontier</span></div>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="dtitle">Landscape table</div>
+        <div style="overflow-x:auto">
+          <table class="deck">
+            <thead><tr><th>System</th><th>In-house GMP</th><th>Makes</th></tr></thead>
+            <tbody>
+              <tr><td>Penn — CVPF</td><td>Yes + heritage</td><td>Cells + vectors</td></tr>
+              <tr><td>CHOP — CVC</td><td>Yes</td><td>AAV/LV vectors</td></tr>
+              <tr class="hi"><td>Mount Sinai</td><td>Consortium</td><td>Delivers 18/38</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="dtitle">Case-study card</div>
+        <div class="case">
+          <div class="ch">Penn Medicine</div>
+          <div class="cmeta">Center for Cellular Immunotherapies · CVPF · Philadelphia, PA · NCI-Comprehensive</div>
+          <dl>
+            <dt>History</dt><dd>2008 CVPF accredited; 2017 first FDA-approved CAR-T (Kymriah).</dd>
+            <dt>Facility</dt><dd>3 GMP suites; cells + vector transduction; gene editing.</dd>
+            <dt>Results</dt><dd>Spinouts Tmunity, Carisma, Capstan (→AbbVie ~$2.1B).</dd>
+          </dl>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VOICE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Content &amp; voice</p>
+      <h2 class="sec">Lead with the takeaway, back it with facts</h2>
+      <p class="sec-lead">The visual system makes a deck look right; the writing makes it land. If a reader skimmed only the headlines, they would get the whole argument.</p>
+    </div>
+    <div class="voice">
+      <div class="vcard do">
+        <h3><span class="mark">✓</span> Do</h3>
+        <ul class="vlist">
+          <li>Write headlines as <em>conclusions</em>: "New York is investing $1B+ in CGT — and MSHS already shares GMP capacity."</li>
+          <li><em>Quantify everything</em>: ~12 AMCs · 18 of 38 · CHOP $35M · Cincinnati $60M.</li>
+          <li><em>Define jargon inline</em>: "GMP (Good Manufacturing Practice)."</li>
+          <li><em>Frame tradeoffs as X vs Y</em>: Autologous vs Allogeneic; Central vs Point-of-care.</li>
+          <li><em>Flag unknowns</em>: "Limited information available — figure not public."</li>
+        </ul>
+      </div>
+      <div class="vcard dont">
+        <h3><span class="mark">✕</span> Don't</h3>
+        <ul class="vlist">
+          <li>Label the topic: <em>"New York market overview."</em></li>
+          <li>Hide behind vague scale: <em>"many centers," "significant investment."</em></li>
+          <li>Use an acronym before it's defined.</li>
+          <li>Bury a judgment in prose when a <em>pill</em> would classify it at a glance.</li>
+          <li>Assert a fact with no <em>source line</em> at the foot of the slide.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RULES -->
+<section style="border-bottom:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The spine</p>
+      <h2 class="sec">Six rules the whole system rests on</h2>
+    </div>
+    <div class="rules">
+      <div class="r"><h4>Takeaway, not topic</h4><p>The headline is a full sentence stating the conclusion. Everything below it is evidence.</p></div>
+      <div class="r"><h4>One idea per slide</h4><p>If you need two headlines, you need two slides.</p></div>
+      <div class="r"><h4>Indigo + cyan</h4><p>Two colors carry the slide; one call-out accent, maximum. Body is ink, never black.</p></div>
+      <div class="r"><h4>The fixed frame</h4><p>Eyebrow → headline → cyan rule → content → sources + page number. Every content slide.</p></div>
+      <div class="r"><h4>A numbered spine</h4><p>Eyebrows run 01·, 02·, 03· and the contents mirror them. The reader is never lost.</p></div>
+      <div class="r"><h4>Cite as you go</h4><p>Every fact-bearing slide names its sources; the deck closes with full URLs.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Repo: <b>design-system/</b> — foundations · components · slide-templates · content-voice · tokens</div>
+    <div>Built in the system it documents · Arial · <b>#221F72</b> / <b>#00AEEF</b></div>
+  </div>
+</footer>

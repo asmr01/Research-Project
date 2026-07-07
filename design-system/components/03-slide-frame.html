@@ -1,0 +1,55 @@
+<!-- @dsCard group="Layout" -->
+<!doctype html>
+<meta charset="utf-8">
+<title>Slide frame</title>
+<style>
+  :root{
+    --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --indigo:#221F72;--cyan:#00AEEF;--magenta:#D80B8C;--violet:#908FB8;
+    --action:#0C7CB2;--navy:#002060;
+    --ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;
+    --ink:#44515B;--muted:#5B6B78;--headline:#221F72;--slide:#FFFFFF;
+    --shadow:0 1px 2px rgba(34,31,114,.06),0 10px 28px rgba(34,31,114,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;
+    --ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;
+    --violet:#9E9DCB;--slide:#191C28;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="light"]{--ground:#FFFFFF;--surface:#EEF2F5;--surface2:#F6F8FA;--hairline:#D7DEE3;--ink:#44515B;--muted:#5B6B78;--headline:#221F72;--cyan:#00AEEF;--action:#0C7CB2;--violet:#908FB8;--slide:#FFFFFF;}
+  :root[data-theme="dark"]{--ground:#12141C;--surface:#1B1E2B;--surface2:#202332;--hairline:#2E3450;--ink:#C4CBD6;--muted:#8C97A6;--headline:#ABA8F2;--cyan:#29BEF5;--action:#4FB0E8;--violet:#9E9DCB;--slide:#191C28;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--ground);color:var(--ink);
+       padding:28px;display:flex;justify-content:center;}
+  .stage{width:100%;max-width:680px;}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  
+  .slide{aspect-ratio:16/9;background:var(--slide);border:1px solid var(--hairline);
+         border-radius:10px;box-shadow:var(--shadow);overflow:hidden;container-type:inline-size;
+         display:grid;grid-template-rows:auto auto auto 1fr auto;padding:3.4cqw 3.6cqw 2.6cqw;}
+  .e{font-size:2.2cqw;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);}
+  .h{font-size:3.9cqw;color:var(--headline);font-weight:400;margin:.5cqw 0 0;line-height:1.18;max-width:92%;}
+  .r{height:.5cqw;background:var(--cyan);margin:2cqw 0 0;border-radius:2px;}
+  .g{display:grid;grid-template-columns:1fr 1fr;gap:2.4cqw 5cqw;align-content:center;padding:1cqw .5cqw;}
+  .ct{font-size:2.7cqw;font-weight:700;color:var(--headline);margin:0;}
+  .cb{font-size:2.15cqw;color:var(--ink);margin:.7cqw 0 0;line-height:1.35;}
+  .f{display:flex;justify-content:space-between;align-items:flex-end;}
+  .s{font-size:1.45cqw;color:var(--muted);}
+  .n{font-size:1.9cqw;color:var(--violet);font-weight:700;}
+
+</style>
+<div class="stage">
+<p class="cap">Layout · The fixed content-slide frame</p>
+<div class="slide">
+  <div class="e">01 · Why manufacture</div>
+  <h3 class="h">AMCs pursue manufacturing for its convergence of research, speed, and economics — and a seat at the table to shape therapies, not just deliver them</h3>
+  <div class="r"></div>
+  <div class="g">
+    <div><p class="ct">Speed to patient</p><p class="cb">Point-of-care compresses vein-to-vein time from weeks to days.</p></div>
+    <div><p class="ct">Influence over trials</p><p class="cb">Owning production earns a voice in trial design and commercialization.</p></div>
+    <div><p class="ct">New economics &amp; IP</p><p class="cb">CDMO capacity, vectors-as-a-service, and equity in spinouts.</p></div>
+    <div><p class="ct">Talent &amp; prestige</p><p class="cb">A platform anchors a broader CGT Center of Excellence.</p></div>
+  </div>
+  <div class="f"><div class="s">Sources: PharmExec · Vizient</div><div class="n">4</div></div>
+</div>
+</div>
